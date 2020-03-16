@@ -1,12 +1,11 @@
 ---
-title: "Data Appendix to \"Name of your paper\""
+title: "Data Appendix to \"The impact of weather events on schooling outcomes\""
 author: "Katya Garcia-Israel"
 output: 
   pdf_document:
     toc: true
     number_sections: true
 ---
-
 
 ```{r setup, echo = F, message = F}
 knitr::opts_chunk$set(results = 'asis', cache = F)
@@ -20,6 +19,9 @@ st_options(plain.ascii = F,
            dfSummary.valid.col = F,
            tmp.img.dir = "./tmp",
            dfSummary.style = "grid")
+# input Stata file
+library(foreign)
+data_2005 <- read.dta("C:/Users/katya/Documents/MyDocuments/A Smith College Spring Semester/Natural Resource Economics/seminar-paper-katyagi21/Raw data/seminar_paper_data/2005_hhsurvey.dta")
 
 #The following custom function simplifies the process of writing dfSummaries to html files
 export_summary_table <- function(dfSummary_output){
@@ -73,28 +75,29 @@ A few tips:
 This section documents the datasets used in this analysis.
 
 ## Dataset description
-**Citation:** Put citation here in APA or other consistent format that you will use throughout the project. Include a hyperlink if applicable.  
-**DOI:** If the dataset has a documention identified (DOI) assigned put it here.  
-**Date Downloaded:** Identify when you downloaded the dataset.  
+**Citation:** .  
+Instituto Nacional de Estadistica. (2005). Encuesta de Hogares (2005) [SAV file]. Retrieved from https://www.ine.gob.bo/index.php/banco/base-de-datos-sociales
+
+**Date Downloaded:** Downloaded September 2019.
 **Filename(s):** raw_data/filename.csv *If you have a large number of files you can use a patten (see visit data below)*
-**Unit of observation:** What distinguishes different rows in your dataset?  
-**Dates covered:** What time frame does the data cover?  
+**Unit of observation:** Unit of observation at the individual level, but each individual is identified mainly by the household id. 
+**Dates covered:** 2005 
 
 ### To obtain a copy
 
-Describe in a step-by-step fashion how an interested user could obtain the data.
+This household survey can be found on the Bolivian National Statistical Institute website, under the menu for 'Banco de Datos' and 'Base de datos de encuestas sociales.' Then the household surveys may be found for the years 2005-2018, excepting 2010.
 
 ### Importable version (if necessary)
 
 **Filename(s):** importable-data/filename-importable.csv
 
-In some cases the raw data is not directly importable. In this case, you should fully document every step you took to create the importable data in a subsection like this one. 
+The original format of this data was from the sav file, but I imported it into Stata before importing the Stata format into R.
 
 ### Variable descriptions
 
 Create a bullet list with the name of each variable in the dataset followed by any information the user would need to understand it.
 
-- **variable_name:** Variable description. 
+- **hh_id:** This variable is the household ID, which is the same for each member of the household. It is made up of letters and numbers. 
 - **variable_name2:** Description of second variable.
 
 ### Data import code and summary
