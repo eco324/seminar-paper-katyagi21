@@ -16,64 +16,10 @@ st_options(plain.ascii = F,
            footnote = NA,
            subtitle.emphasis = F,
            dfSummary.silent = T,
-           dfSummary.valid.col = F,
+           dfSummary.valid.col = F, 
            tmp.img.dir = "./tmp",
            dfSummary.style = "grid")
 
-#The following custom function simplifies the process of writing dfSummaries to html files
-  
-export_summary_table <- function(dfSummary_output){
-  data_households <- attr(dfSummary_output, "data_info")
-  total_2005 <- data_households$hh_2005
-  print(dfSummary_output,
-      file = str_c("C:\\Users\\katya\\Documents\\MyDocuments\\A Smith College Spring Semester\\Natural Resource Economics\\seminar-paper-katyagi21\\", total_2005, "_summary.html"),
-      method = "browser",
-      Weather.and.school = total_2005)
-}
-```
-
-# Raw data
-This section documents the datasets used in this analysis: household data, flood data, and drought data from 2005 in Bolivia.
-
-```{r input households data, echo = F, message = F}
-# input Stata file, add haven package to make stata 16 version readable 
-library(foreign)
-library(haven)
-data_2005 <- read_dta("C:\\Users\\katya\\Documents\\MyDocuments\\A Smith College Spring Semester\\Natural Resource Economics\\seminar-paper-katyagi21\\Raw data\\seminar_paper_data\\2005_hhsurvey.dta")
-#install.packages("reshape")
-require(reshape)
-data_2005 <- rename(data_2005, c(folio = "hh_id"))
-data_2005 <- rename(data_2005, c(s3_08 = "assist"))
-data_2005 <- rename(data_2005, c(s3_09 = "reason"))
-data_2005 <- rename(data_2005, c(nm_y = "members"))
-data_2005 <- rename(data_2005, c(s1_02 = "sex"))
-data_2005 <- rename(data_2005, c(s1_03 = "age"))
-data_2005 <- rename(data_2005, c(s1_05 = "relation"))
-data_2005 <- rename(data_2005, c(s3_01 = "literacy"))
-data_2005 <- rename(data_2005, c(s3_04 = "register"))
-data_2005 <- rename(data_2005, c(s3_05b = "grade"))
-data_2005 <- rename(data_2005, c(s3_07 = "repeated"))
-data_2005 <- rename(data_2005, c(depto = "dept"))
-```
-
-
-```{r floods data set imported, echo = F, message = F}
-#floods data set 
-
-floods <- read_csv("C:\\Users\\katya\\Documents\\MyDocuments\\A Smith College Spring Semester\\Natural Resource Economics\\seminar-paper-katyagi21\\Raw data\\recurrencia_inundacion2002_2012bol.csv")
-
-#rename variables
-floods <- rename(floods, c(NOM_DEP = "dept"))
-floods <- rename(floods, c(A_2005 = "flood"))
-
-library(dplyr)
-floods %>% 
-  group_by(dept) %>% 
-  summarise(flood = sum(flood))
-
-
-```
-=======
 # add haven package to make stata 16 version readable 
 library(foreign)
 library(haven)
@@ -87,23 +33,6 @@ export_summary_table <- function(dfSummary_output){
       method = "browser",
       report.title = ds_name)
 }
-```
-
->>>>>>> 38e32379b134bf9fa5bfef7480c00648daf94350
-
-```{r importing droughts data, echo = F, message = F}
-#drought data set 
-drought <- read_csv("C:\\Users\\katya\\Documents\\MyDocuments\\A Smith College Spring Semester\\Natural Resource Economics\\seminar-paper-katyagi21\\Raw data\\recurrenciasequia_2002_2012bol.csv")
-
-#rename variables
-drought <- rename(weather, c(NOM_DEP = "dept"))
-drought <- rename(weather, c(A_2005 = "drought"))
-
-library(dplyr)
-drought %>% 
-  group_by(dept) %>% 
-  summarise(drought = sum(drought))
-
 ```
 
 ```{r set dfSummary css style, echo = F, include = F}
@@ -139,15 +68,11 @@ A few tips:
 - Make sure you have empty lines above and below section and subsection headings.
 - When creating numbered lists, you can number all items in your list with 1. Rmarkdown will number them sequentially when it creates your final document.
 
-<<<<<<< HEAD
-## Dataset description
-=======
 # Raw data
 *Each dataset you use will have its own documentation section. The next subsection in this document (Dataset description) is a template. You can copy this section and paste it into your document each time you need to add a section for a new dataset. Note that each line in the Dataset description section __must__ end with two spaces.* 
 This section documents the datasets used in this analysis.
 
 ## Household Survey data
->>>>>>> 38e32379b134bf9fa5bfef7480c00648daf94350
 **Citation:** .  
 Instituto Nacional de Estadistica. (2005). Encuesta de Hogares (2005) [SAV file]. Retrieved from https://www.ine.gob.bo/index.php/banco/base-de-datos-sociales
 
@@ -166,16 +91,6 @@ This household survey can be found on the Bolivian National Statistical Institut
 
 The original format of this data was from the sav file, but I imported it into Stata before importing the Stata format into R.
 
-<<<<<<< HEAD
-```{r renaming variables}
-
-
-
-```
-
-
-=======
->>>>>>> 38e32379b134bf9fa5bfef7480c00648daf94350
 ### Variable descriptions
 
 Create a bullet list with the name of each variable in the dataset followed by any information the user would need to understand it.
@@ -198,36 +113,6 @@ Create a bullet list with the name of each variable in the dataset followed by a
 
 ### Data import code and summary
 
-<<<<<<< HEAD
-*Once you've described the variables, enter an R chunk by selecting Code -> Insert Chunk, or Ctrl+Alt+I, give it a name to describe the dataset you are importing. After importing, export a dataframe summary using the command.*
-```{r selecting variables}
-# select variables 
-hh_vars <- c("hh_id", "nro1", "urb_rur", "assist", "reason", "members", "sex", "age", "relation", "literacy", "register", "grade", "repeated", "dept")
-hh_2005 <- data_2005[hh_vars]
-
-data_2005 <- rename(data_2005, c(folio = "hh_id"))
-data_2005 <- rename(data_2005, c(s3_08 = "assist"))
-data_2005 <- rename(data_2005, c(s3_09 = "reason"))
-data_2005 <- rename(data_2005, c(nm_y = "members"))
-data_2005 <- rename(data_2005, c(s1_02 = "sex"))
-data_2005 <- rename(data_2005, c(s1_03 = "age"))
-data_2005 <- rename(data_2005, c(s1_05 = "relation"))
-data_2005 <- rename(data_2005, c(s3_01 = "literacy"))
-data_2005 <- rename(data_2005, c(s3_04 = "register"))
-data_2005 <- rename(data_2005, c(s3_05b = "grade"))
-data_2005 <- rename(data_2005, c(s3_07 = "repeated"))
-data_2005 <- rename(data_2005, c(depto = "dept"))
-
-#select weather variables
-flood_vars <- c("dept", "flood")
-flood_2005 <- floods[flood_vars]
-
-```
-
-
-```{r merging datasets}
-total_2005 <- merge(hh_2005, weather_2005,by="dept")
-=======
 ```{r import household data}
 data_2005 <- read_dta(file.path("Raw data","seminar_paper_data","2005_hhsurvey.dta")) %>% 
   rename(hh_id = folio,
@@ -240,11 +125,10 @@ data_2005 <- read_dta(file.path("Raw data","seminar_paper_data","2005_hhsurvey.d
         literacy = s3_01,
         register = s3_04,
         grade = s3_05b,
-        repeated = s3_07)
-# it looks like you need to add dept = xxx to the list above since dept is not showing up as a variable for me        
+        repeated = s3_07,
+        dept = depto)
 hh_2005 <- data_2005 %>% 
   select(hh_id, assist, reason, members, sex, age, relation, literacy, register, grade, repeated, dept)
->>>>>>> 38e32379b134bf9fa5bfef7480c00648daf94350
 ```
 
 
@@ -253,7 +137,7 @@ hh_2005 <- data_2005 %>%
 export_summary_table(dfSummary(hh_2005))
 ```
 
-## Weather data
+## Flood data
 **Citation:** Put citation here in APA or other consistent format that you will use throughout the project. Include a hyperlink if applicable.  
 **DOI:** If the dataset has a documention identified (DOI) assigned put it here.  
 **Date Downloaded:** Identify when you downloaded the dataset.  
@@ -261,8 +145,6 @@ export_summary_table(dfSummary(hh_2005))
 **Unit of observation:** What distinguishes different rows in your dataset?  
 **Dates covered:** What time frame does the data cover?  
 
-<<<<<<< HEAD
-=======
 ### To obtain a copy
 
 Describe in a step-by-step fashion how an interested user could obtain the data.
@@ -282,8 +164,34 @@ Create a bullet list with the name of each variable in the dataset followed by a
 
 ### Data import code and summary
 
-```{r import weather data}
-weather <- read_csv(file.path("Raw data", "recurrencia_inundacion2002_2012bol.csv")) %>% 
+## Flood data
+**Citation:** Put citation here in APA or other consistent format that you will use throughout the project. Include a hyperlink if applicable.  
+**DOI:** If the dataset has a documention identified (DOI) assigned put it here.  
+**Date Downloaded:** Identify when you downloaded the dataset.  
+**Filename(s):** raw_data/filename.csv *If you have a large number of files you can use a patten (see visit data below)*
+**Unit of observation:** What distinguishes different rows in your dataset?  
+**Dates covered:** What time frame does the data cover?  
+
+### To obtain a copy
+
+Describe in a step-by-step fashion how an interested user could obtain the data.
+
+### Importable version (if necessary)
+
+**Filename(s):** importable-data/filename-importable.csv
+
+In some cases the raw data is not directly importable. In this case, you should fully document every step you took to create the importable data in a subsection like this one. 
+
+### Variable descriptions
+
+Create a bullet list with the name of each variable in the dataset followed by any information the user would need to understand it.
+
+- **variable_name:** Variable description. 
+- **variable_name2:** Description of second variable.
+
+### Data import code and summary
+```{r import flood data}
+flood <- read_csv(file.path("Raw data", "recurrencia_inundacion2002_2012bol.csv")) %>% 
   rename(dept = NOM_DEP, flood = A_2005)
 
 ##Note: I can't tell completely but it appears that the file you're reading in has all the weather data. Once you load the data onto GitHub, I can help you figure out how to use pivot_longer() to reshape the weather data.
@@ -292,10 +200,49 @@ flood_summary %>% weather %>%
   group_by(dept) %>% 
   summarise(flood = sum(flood))
 
-`export_summary_table(dfSummary(dataset_name))`
+`export_summary_table(dfSummary(flood_summary))`
 ```
 
->>>>>>> 38e32379b134bf9fa5bfef7480c00648daf94350
+## Drough data
+**Citation:** Put citation here in APA or other consistent format that you will use throughout the project. Include a hyperlink if applicable.  
+**DOI:** If the dataset has a documention identified (DOI) assigned put it here.  
+**Date Downloaded:** Identify when you downloaded the dataset.  
+**Filename(s):** raw_data/filename.csv *If you have a large number of files you can use a patten (see visit data below)*
+**Unit of observation:** What distinguishes different rows in your dataset?  
+**Dates covered:** What time frame does the data cover?  
+
+### To obtain a copy
+
+Describe in a step-by-step fashion how an interested user could obtain the data.
+
+### Importable version (if necessary)
+
+**Filename(s):** importable-data/filename-importable.csv
+
+In some cases the raw data is not directly importable. In this case, you should fully document every step you took to create the importable data in a subsection like this one. 
+
+### Variable descriptions
+
+Create a bullet list with the name of each variable in the dataset followed by any information the user would need to understand it.
+
+- **variable_name:** Variable description. 
+- **variable_name2:** Description of second variable.
+
+
+```{r importing droughts data, echo = F, message = F}
+#drought data set 
+drought <- read_csv("Raw data\\recurrenciasequia_2002_2012bol.csv")
+# modify this section following the template with the flood data, but wait until we've gotten the pivot_longer() function working so you don't duplicate effort.
+#rename variables
+drought <- rename(weather, c(NOM_DEP = "dept"))
+drought <- rename(weather, c(A_2005 = "drought"))
+
+library(dplyr)
+drought %>% 
+  group_by(dept) %>% 
+  summarise(drought = sum(drought))
+
+```
 
 # Data Processing and Combination
 *This section should include a discussion of the processing and merging steps needed to create your basic data. The code to implement these steps should be included in chunks in this section. Once the final merged data has been created, you should use the dfSummary function again to summarize the data you will be using. You should also save a file containing all the objects you will use in your final analysis to the processed_data folder.*
