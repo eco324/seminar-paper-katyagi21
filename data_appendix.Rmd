@@ -93,8 +93,10 @@ data_2005 <- read_dta(file.path("Raw data","seminar_paper_data","2005_hhsurvey.d
         literacy = s3_01,
         register = s3_04,
         grade = s3_05b,
-        repeated = s3_07,
-        dept = depto)
+        repeated = s3_07) %>% 
+  mutate(dept = case_when(depto == "1" ~ "Department 1",
+                          depto == "2" ~ "Department 2"))
+
 hh_2005 <- data_2005 %>% 
   select(hh_id, assist, reason, members, sex, age, relation, literacy, register, grade, repeated, dept, urb_rur)
 ```
@@ -143,13 +145,14 @@ Create a bullet list with the name of each variable in the dataset followed by a
 ### Data import code and summary
 ```{r import flood data}
 flood <- read_csv(file.path("Raw data", "recurrencia_inundacion2002_2012bol.csv")) %>% 
-  rename(dept = NOM_DEP, flood = A_2005)
+  rename(dept = NOM_DEP)
 
-flood_summary %>% weather %>% 
+flood_summary <- flood %>% 
   group_by(dept) %>% 
-  summarise(flood = sum(flood))
+  summarize_at(vars(starts_with("A_")), sum) %>% 
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "floods")
 
-`export_summary_table(dfSummary(flood_summary))`
+export_summary_table(dfSummary(flood_summary))
 ```
 ## Drought data
 **Citation:** GeoSinager. (2016). Mapa Recurrencias de Sequias Gestiones 2002-2012. [CSV file]. Retrieved from http://geosinager.defensacivil.gob.bo/maps/225
@@ -189,12 +192,13 @@ Create a bullet list with the name of each variable in the dataset followed by a
 library(readxl)
 drought <- read_excel(file.path("Raw data", "recurrenciasequia_2002_2012bol (1).xls")) %>% 
 #rename variables
-    rename(dept = NOM_DEP, drought = A_2005)
+    rename(dept = NOM_DEP)
+
 drought_summary %>%
   group_by(dept) %>% 
   summarise(flood = sum(flood))
 
-`export_summary_table(dfSummary(drought_summary))`
+export_summary_table(dfSummary(drought_summary))
 
 ```
 
