@@ -94,8 +94,7 @@ data_2005 <- read_dta(file.path("Raw data","seminar_paper_data","2005_hhsurvey.d
         register = s3_04,
         grade = s3_05b,
         repeated = s3_07) %>% 
-  mutate(year = 2005,
-         dept = case_when(depto == "1" ~ "Chuquisaca",
+  mutate(dept = case_when(depto == "1" ~ "Chuquisaca",
                           depto == "2" ~ "La Paz",
                           depto == "3" ~ "Cochabamba",
                           depto == "4" ~ "Oruro",
@@ -158,8 +157,7 @@ flood <- read_csv(file.path("Raw data", "recurrencia_inundacion2002_2012bol.csv"
 flood_summary <- flood %>% 
   group_by(dept) %>% 
   summarize_at(vars(starts_with("A_")), sum) %>% 
-  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "floods") %>%
-  mutate(year = as.numeric(year))
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "floods")
 
 export_summary_table(dfSummary(flood_summary))
 ```
@@ -206,8 +204,7 @@ drought <- read_excel(file.path("Raw data", "recurrenciasequia_2002_2012bol (1).
 drought_summary <- drought %>%
   group_by(dept) %>% 
   summarize_at(vars(starts_with("A_")), sum) %>%
-  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "droughts") %>%
-  mutate(year = as.numeric(year))
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "droughts")
 
 export_summary_table(dfSummary(drought_summary))
 
