@@ -94,8 +94,15 @@ data_2005 <- read_dta(file.path("Raw data","seminar_paper_data","2005_hhsurvey.d
         register = s3_04,
         grade = s3_05b,
         repeated = s3_07) %>% 
-  mutate(dept = case_when(depto == "1" ~ "Department 1",
-                          depto == "2" ~ "Department 2"))
+  mutate(dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"))
 
 hh_2005 <- data_2005 %>% 
   select(hh_id, assist, reason, members, sex, age, relation, literacy, register, grade, repeated, dept, urb_rur)
@@ -194,9 +201,10 @@ drought <- read_excel(file.path("Raw data", "recurrenciasequia_2002_2012bol (1).
 #rename variables
     rename(dept = NOM_DEP)
 
-drought_summary %>%
+drought_summary <- drought %>%
   group_by(dept) %>% 
-  summarise(flood = sum(flood))
+  summarize_at(vars(starts_with("A_")), sum) %>%
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "droughts")
 
 export_summary_table(dfSummary(drought_summary))
 
@@ -210,7 +218,8 @@ To create a complete dataset, I merged the household data with the floods data a
 #I would recommend combining all the years of household data and then merging with the weather data
 
 total_2005 <- hh_2005 %>% 
-  left_join(flood_summary)
+  left_join(flood_summary) %>%
+  left_join(drought_summary)
 ```
 
 # Analysis Variables
