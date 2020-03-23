@@ -97,7 +97,7 @@ data_2005 <- read_dta(file.path("Raw data","seminar_paper_data","2005_hhsurvey.d
 
 hh_2005 <- data_2005 %>% 
   select(hh_id, assist, reason, members, sex, age,
-         relation, literacy, register, grade, repeated, dept0, urb_rur) %>% 
+         relation, literacy, register, grade, repeated, depto, urb_rur) %>% 
   mutate(year = 2005,
          dept = case_when(depto == "1" ~ "Chuquisaca",
                           depto == "2" ~ "La Paz",
