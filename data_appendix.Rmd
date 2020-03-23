@@ -41,35 +41,9 @@ st_css()
 # Appendix description
 *Your Data Appendix should begin with a brief statement explaining its purpose like the following one.*
 
-This Data Appendix documents the data used in "Paper Title". It was prepared in a Rmarkdown document that contains both the documentation and the R code used to prepare the data used in the final estimation. It also includes descriptive statistics for both the original data and the final dataset, with a discussion of any issues of note.
-
 The datasets used directly by the final analysis are saved in `processed-data/` at the end of this file.
 
-# Instructions for Use
-
-To start creating your own data appendix, follow these steps: 
-
-1. Replace the title and author in the section at the top of the file (called the YAML).
-1. Commit your changes with a message like "customizing data appendix".
-1. Delete this instruction section of the document.
-1. Remove any other instructions in italics and examples from the completed sections of the document.
-
-Remember that you will submit your assignment by committing and then pushing your versions to your repository. I encourage you to commit your changes often as you work, but there are three specific points at which you need to both submit and push changes, corresponding to course deadlines:
-
-1. You must submit a version with the original data section completed by the Data Appendix 1 deadline. This will include the .Rmd file, the .pdf file, and the html data summary files stored in the output folder.
-2. You must submit a version with all parts completed by the Data Appendix 2 deadline.  
-3. You must submit a final version of this document that is consistent with your final paper by the final project deadline.  
-
-While creating your data appendix, refer regularly to the assignment descriptions posted on Moodle.
-
-A few tips:
-
-- When creating a list like this one, be sure to put an empty line above the list. If you don't do this, your entries won't be formatted a list.
-- Make sure you have empty lines above and below section and subsection headings.
-- When creating numbered lists, you can number all items in your list with 1. Rmarkdown will number them sequentially when it creates your final document.
-
 # Raw data
-*Each dataset you use will have its own documentation section. The next subsection in this document (Dataset description) is a template. You can copy this section and paste it into your document each time you need to add a section for a new dataset. Note that each line in the Dataset description section __must__ end with two spaces.* 
 This section documents the datasets used in this analysis.
 
 ## Household Survey data
@@ -77,7 +51,7 @@ This section documents the datasets used in this analysis.
 Instituto Nacional de Estadistica. (2005). Encuesta de Hogares (2005) [SAV file]. Retrieved from https://www.ine.gob.bo/index.php/banco/base-de-datos-sociales
 
 **Date Downloaded:** Downloaded September 2019.
-**Filename(s):** raw_data/filename.csv *If you have a large number of files you can use a patten (see visit data below)*
+**Filename(s):** raw_data/filename.csv 
 **Unit of observation:** Unit of observation at the individual level, but each individual is identified mainly by the household id. 
 **Dates covered:** 2005 
 
@@ -85,30 +59,24 @@ Instituto Nacional de Estadistica. (2005). Encuesta de Hogares (2005) [SAV file]
 
 This household survey can be found on the Bolivian National Statistical Institute website, under the menu for 'Banco de Datos' and 'Base de datos de encuestas sociales.' Then the household surveys may be found for the years 2005-2018, excepting 2010.
 
-### Importable version (if necessary)
-
-**Filename(s):** importable-data/filename-importable.csv
-
 The original format of this data was from the sav file, but I imported it into Stata before importing the Stata format into R.
 
 ### Variable descriptions
 
-Create a bullet list with the name of each variable in the dataset followed by any information the user would need to understand it.
-
-- **hh_id:** This variable is the household ID, which is the same for each member of the household. It is made up of letters and numbers. 
-- **nro1:** Description of second variable.
-- **assist:** 
-- **urb_rur:** 
-- **reason:** 
-- **members:** 
-- **sex:** 
-- **age:** 
-- **relation:** 
-- **literacy:** 
-- **register:**
-- **grade:** 
-- **repeated:** 
-- **dept:** 
+- **hh_id:** The household ID, which is the same for each member of the household. It is made up of letters and numbers. 
+- **nro1:** The number of the person in each household.
+- **assist:** Binary variable, whether or not the individual assists school 
+- **urb_rur:** Binary variable, whether the household is in an urban or rural area
+- **reason:** the reason why the individual is not assisting school if they are not 
+- **members:** number of household members excluding servants 
+- **sex:** the sex of the individual, Male = 1, Female =2 
+- **age:** How old the individual is, in years 
+- **relation:** The relationship of the individual to the head of household 
+- **literacy:** Binary variable, whether a person can read and write 
+- **register:** Binary variable, whether an individual registered for school or not 
+- **grade:** For what grade is the person registered 
+- **repeated:** whether the person has repeated the grade they are currently registered in 
+- **dept:** the department in which the person lives 
 
 
 ### Data import code and summary
@@ -128,7 +96,7 @@ data_2005 <- read_dta(file.path("Raw data","seminar_paper_data","2005_hhsurvey.d
         repeated = s3_07,
         dept = depto)
 hh_2005 <- data_2005 %>% 
-  select(hh_id, assist, reason, members, sex, age, relation, literacy, register, grade, repeated, dept)
+  select(hh_id, assist, reason, members, sex, age, relation, literacy, register, grade, repeated, dept, urb_rur)
 ```
 
 
@@ -138,7 +106,10 @@ export_summary_table(dfSummary(hh_2005))
 ```
 
 ## Flood data
-**Citation:** Put citation here in APA or other consistent format that you will use throughout the project. Include a hyperlink if applicable.  
+**Citation:** GeoSinager. (2016). Mapa Recurrencias de Inundaciones Gestiones 2002-2012. [CSV file]. Retrieved from http://geosinager.defensacivil.gob.bo/maps/226
+
+Instituto Nacional de Estadistica. (2005). Encuesta de Hogares (2005) [SAV file]. Retrieved from https://www.ine.gob.bo/index.php/banco/base-de-datos-sociales
+
 **DOI:** If the dataset has a documention identified (DOI) assigned put it here.  
 **Date Downloaded:** Identify when you downloaded the dataset.  
 **Filename(s):** raw_data/filename.csv *If you have a large number of files you can use a patten (see visit data below)*
@@ -159,42 +130,20 @@ In some cases the raw data is not directly importable. In this case, you should 
 
 Create a bullet list with the name of each variable in the dataset followed by any information the user would need to understand it.
 
-- **variable_name:** Variable description. 
-- **variable_name2:** Description of second variable.
-
-### Data import code and summary
-
-## Flood data
-**Citation:** Put citation here in APA or other consistent format that you will use throughout the project. Include a hyperlink if applicable.  
-**DOI:** If the dataset has a documention identified (DOI) assigned put it here.  
-**Date Downloaded:** Identify when you downloaded the dataset.  
-**Filename(s):** raw_data/filename.csv *If you have a large number of files you can use a patten (see visit data below)*
-**Unit of observation:** What distinguishes different rows in your dataset?  
-**Dates covered:** What time frame does the data cover?  
-
-### To obtain a copy
-
-Describe in a step-by-step fashion how an interested user could obtain the data.
-
-### Importable version (if necessary)
-
-**Filename(s):** importable-data/filename-importable.csv
-
-In some cases the raw data is not directly importable. In this case, you should fully document every step you took to create the importable data in a subsection like this one. 
-
-### Variable descriptions
-
-Create a bullet list with the name of each variable in the dataset followed by any information the user would need to understand it.
-
-- **variable_name:** Variable description. 
-- **variable_name2:** Description of second variable.
+- **dept:** department name 
+- **A_2005:** how many floods occurred in 2005 in that location 
+- **A_2006:** how many floods occurred in 2006 in that location 
+- **A_2007:** how many floods occurred in 2007 in that location 
+- **A_2008:** how many floods occurred in 2008 in that location 
+- **A_2009:** how many floods occurred in 2009 in that location 
+- **A_2010:** how many floods occurred in 2010 in that location 
+- **A_2011:** how many floods occurred in 2011 in that location 
+- **A_2012:** how many floods occurred in 2012 in that location 
 
 ### Data import code and summary
 ```{r import flood data}
 flood <- read_csv(file.path("Raw data", "recurrencia_inundacion2002_2012bol.csv")) %>% 
   rename(dept = NOM_DEP, flood = A_2005)
-
-##Note: I can't tell completely but it appears that the file you're reading in has all the weather data. Once you load the data onto GitHub, I can help you figure out how to use pivot_longer() to reshape the weather data.
 
 flood_summary %>% weather %>% 
   group_by(dept) %>% 
@@ -202,18 +151,17 @@ flood_summary %>% weather %>%
 
 `export_summary_table(dfSummary(flood_summary))`
 ```
+## Drought data
+**Citation:** GeoSinager. (2016). Mapa Recurrencias de Sequias Gestiones 2002-2012. [CSV file]. Retrieved from http://geosinager.defensacivil.gob.bo/maps/225
 
-## Drough data
-**Citation:** Put citation here in APA or other consistent format that you will use throughout the project. Include a hyperlink if applicable.  
-**DOI:** If the dataset has a documention identified (DOI) assigned put it here.  
-**Date Downloaded:** Identify when you downloaded the dataset.  
-**Filename(s):** raw_data/filename.csv *If you have a large number of files you can use a patten (see visit data below)*
-**Unit of observation:** What distinguishes different rows in your dataset?  
-**Dates covered:** What time frame does the data cover?  
+**Date Downloaded:** October 2019.  
+**Filename(s):** Raw data/droughts.csv 
+**Unit of observation:** The unit of observation is the municipality 
+**Dates covered:** 2002-2012  
 
 ### To obtain a copy
 
-Describe in a step-by-step fashion how an interested user could obtain the data.
+This data can be obtained from http://geosinager.defensacivil.gob.bo/maps/225. It is shown on a map with different layers. 
 
 ### Importable version (if necessary)
 
@@ -225,26 +173,33 @@ In some cases the raw data is not directly importable. In this case, you should 
 
 Create a bullet list with the name of each variable in the dataset followed by any information the user would need to understand it.
 
-- **variable_name:** Variable description. 
-- **variable_name2:** Description of second variable.
+- **dept:** department name 
+- **A_2005:** how many droughts occurred in 2005 in that location 
+- **A_2006:** how many droughts occurred in 2006 in that location 
+- **A_2007:** how many droughts occurred in 2007 in that location 
+- **A_2008:** how many droughts occurred in 2008 in that location 
+- **A_2009:** how many droughts occurred in 2009 in that location 
+- **A_2010:** how many droughts occurred in 2010 in that location 
+- **A_2011:** how many droughts occurred in 2011 in that location 
+- **A_2012:** how many droughts occurred in 2012 in that location 
 
 
 ```{r importing droughts data, echo = F, message = F}
 #drought data set 
-drought <- read_csv("Raw data\\recurrenciasequia_2002_2012bol.csv")
-# modify this section following the template with the flood data, but wait until we've gotten the pivot_longer() function working so you don't duplicate effort.
+library(readxl)
+drought <- read_excel(file.path("Raw data", "recurrenciasequia_2002_2012bol (1).xls")) %>% 
 #rename variables
-drought <- rename(weather, c(NOM_DEP = "dept"))
-drought <- rename(weather, c(A_2005 = "drought"))
-
-library(dplyr)
-drought %>% 
+    rename(dept = NOM_DEP, drought = A_2005)
+drought_summary %>%
   group_by(dept) %>% 
-  summarise(drought = sum(drought))
+  summarise(flood = sum(flood))
+
+`export_summary_table(dfSummary(drought_summary))`
 
 ```
 
 # Data Processing and Combination
+To create a complete dataset, I merged the household data with the floods data and the droughts data. Before merging the data, I cut down the datasets to include only the relevant variables needed for analysis.
 *This section should include a discussion of the processing and merging steps needed to create your basic data. The code to implement these steps should be included in chunks in this section. Once the final merged data has been created, you should use the dfSummary function again to summarize the data you will be using. You should also save a file containing all the objects you will use in your final analysis to the processed_data folder.*
 
 ```{r merging datasets}
@@ -254,12 +209,12 @@ total_2005 <- hh_2005 %>%
   left_join(flood_summary)
 ```
 
-```
-
 # Analysis Variables
 
 This section should include a description of all the variables that are used in your final analysis. At the end of the section, you should save all of these variables in the processed_data folder of your repository.
 
 # Discussion of Data
+
+In the household data, the sample of children in 2005 was 
 
 *This section should include a discussion of any data patterns you notice based on the summaries created in the code above.*
