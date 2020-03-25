@@ -1,0 +1,233 @@
+---
+title: "Data Appendix to \"The impact of weather events on schooling outcomes\""
+author: "Katya Garcia-Israel"
+output: 
+  pdf_document:
+    toc: true
+    number_sections: true
+---
+
+```{r setup, echo = F, message = F}
+knitr::opts_chunk$set(results = 'asis', cache = F)
+library(tidyverse)
+library(summarytools)
+st_options(plain.ascii = F,
+           style = "rmarkdown",
+           footnote = NA,
+           subtitle.emphasis = F,
+           dfSummary.silent = T,
+           dfSummary.valid.col = F, 
+           tmp.img.dir = "./tmp",
+           dfSummary.style = "grid")
+
+# add haven package to make stata 16 version readable 
+library(foreign)
+library(haven)
+
+#The following custom function simplifies the process of writing dfSummaries to html files
+export_summary_table <- function(dfSummary_output){
+  data_info <- attr(dfSummary_output, "data_info")
+  ds_name <- data_info$Data.frame
+  print(dfSummary_output,
+      file = str_c("output/", ds_name, "_summary.html"),
+      method = "browser",
+      report.title = ds_name)
+}
+```
+
+```{r set dfSummary css style, echo = F, include = F}
+st_css()
+```
+# Appendix description
+This data appendix details the steps of collecting, processing, and merging the data needed to create the complete data set showing information about schooling and weather events. It concludes with a discussion of patterns found in the data.
+
+The datasets used directly by the final analysis are saved in `processed-data/` at the end of this file.
+
+# Raw data
+This section documents the datasets used in this analysis.
+
+## Household Survey data
+**Citation:** .  
+Instituto Nacional de Estadistica. (2005). Encuesta de Hogares (2005) [SAV file]. Retrieved from https://www.ine.gob.bo/index.php/banco/base-de-datos-sociales
+
+**Date Downloaded:** Downloaded September 2019.
+**Filename(s):** raw_data/filename.csv 
+**Unit of observation:** Unit of observation at the individual level, but each individual is identified mainly by the household id. 
+**Dates covered:** 2005 
+
+### To obtain a copy
+
+This household survey can be found on the Bolivian National Statistical Institute website, under the menu for 'Banco de Datos' and 'Base de datos de encuestas sociales.' Then the household surveys may be found for the years 2005-2018, excepting 2010.
+
+The original format of this data was from the sav file, but I imported it into Stata before importing the Stata format into R.
+
+### Variable descriptions
+
+- **hh_id:** The household ID, which is the same for each member of the household. It is made up of letters and numbers. 
+- **nro1:** The number of the person in each household.
+- **assist:** Binary variable, whether or not the individual assists school 
+- **urb_rur:** Binary variable, whether the household is in an urban or rural area
+- **reason:** the reason why the individual is not assisting school if they are not 
+- **members:** number of household members excluding servants 
+- **sex:** the sex of the individual, Male = 1, Female =2 
+- **age:** How old the individual is, in years 
+- **relation:** The relationship of the individual to the head of household 
+- **literacy:** Binary variable, whether a person can read and write 
+- **register:** Binary variable, whether an individual registered for school or not 
+- **grade:** For what grade is the person registered 
+- **repeated:** whether the person has repeated the grade they are currently registered in 
+- **dept:** the department in which the person lives 
+- **income:** the per capita monthly income for each household, in bolivianos
+
+
+### Data import code and summary
+
+```{r import household data}
+data_2005 <- read_dta(file.path("Raw data","seminar_paper_data","2005_hhsurvey.dta")) %>% 
+  rename(hh_id = folio,
+        assist = s3_08,  
+        reason = s3_09, 
+        members = nm_y,
+        sex = s1_02,
+        age = s1_03,
+        relation = s1_05,
+        literacy = s3_01,
+        register = s3_04,
+        grade = s3_05b,
+        repeated = s3_07,
+        income = y_perc1A) 
+
+hh_2005 <- data_2005 %>% 
+  select(hh_id, assist, reason, members, sex, age,
+         relation, literacy, register, grade, repeated, depto, urb_rur, income) %>% 
+  mutate(year = 2005,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"))
+```
+
+
+
+```{r exporting data table}
+export_summary_table(dfSummary(hh_2005))
+```
+
+## Flood data
+**Citation:** GeoSinager. (2016). Mapa Recurrencias de Inundaciones Gestiones 2002-2012. [CSV file]. Retrieved from http://geosinager.defensacivil.gob.bo/maps/226
+
+**Date Downloaded:** October 2019
+**Filename(s):** raw_data/filename.csv 
+**Unit of observation:** Municipality  
+**Dates covered:** 2002-2012
+
+### To obtain a copy
+
+This data can be found at the following website: http://geosinager.defensacivil.gob.bo/maps/226. It is associated with a map showing the flood occurrences information spatially, and to get the data in a non-spatial format, the flood layer should be downloaded. It may be downloaded in a variety of different formats, including csv.
+
+
+### Variable descriptions
+
+- **dept:** department name 
+- **A_2005:** how many floods occurred in 2005 in that location 
+- **A_2006:** how many floods occurred in 2006 in that location 
+- **A_2007:** how many floods occurred in 2007 in that location 
+- **A_2008:** how many floods occurred in 2008 in that location 
+- **A_2009:** how many floods occurred in 2009 in that location 
+- **A_2010:** how many floods occurred in 2010 in that location 
+- **A_2011:** how many floods occurred in 2011 in that location 
+- **A_2012:** how many floods occurred in 2012 in that location 
+
+### Data import code and summary
+```{r import flood data}
+flood <- read_csv(file.path("Raw data", "recurrencia_inundacion2002_2012bol.csv")) %>% 
+  rename(dept = NOM_DEP)
+
+flood_summary <- flood %>% 
+  group_by(dept) %>% 
+  summarize_at(vars(starts_with("A_")), sum) %>% 
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "floods") %>%
+  mutate(year = as.numeric(year))
+
+export_summary_table(dfSummary(flood_summary))
+```
+## Drought data
+**Citation:** GeoSinager. (2016). Mapa Recurrencias de Sequias Gestiones 2002-2012. [CSV file]. Retrieved from http://geosinager.defensacivil.gob.bo/maps/225
+
+**Date Downloaded:** October 2019.  
+**Filename(s):** Raw data/droughts.csv 
+**Unit of observation:** The unit of observation is the municipality 
+**Dates covered:** 2002-2012  
+
+### To obtain a copy
+
+This data can be obtained from http://geosinager.defensacivil.gob.bo/maps/225. It is shown on a map with different layers, and the raw data may be downloaded in a variety of different forms, including csv. 
+
+
+### Variable descriptions
+
+- **dept:** department name 
+- **A_2005:** how many droughts occurred in 2005 in that location 
+- **A_2006:** how many droughts occurred in 2006 in that location 
+- **A_2007:** how many droughts occurred in 2007 in that location 
+- **A_2008:** how many droughts occurred in 2008 in that location 
+- **A_2009:** how many droughts occurred in 2009 in that location 
+- **A_2010:** how many droughts occurred in 2010 in that location 
+- **A_2011:** how many droughts occurred in 2011 in that location 
+- **A_2012:** how many droughts occurred in 2012 in that location 
+
+
+```{r importing droughts data, echo = F, message = F}
+#drought data set 
+library(readxl)
+drought <- read_excel(file.path("Raw data", "recurrenciasequia_2002_2012bol (1).xls")) %>% 
+#rename variables
+    rename(dept = NOM_DEP)
+
+drought_summary <- drought %>%
+  group_by(dept) %>% 
+  summarize_at(vars(starts_with("A_")), sum) %>%
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "droughts") %>%
+  mutate(year = as.numeric(year))
+
+export_summary_table(dfSummary(drought_summary))
+
+```
+
+# Data Processing and Combination
+
+To create a complete dataset, I merged the household data with the floods data and the droughts data. Before merging the data, I cut down the datasets to include only the relevant variables needed for analysis in each file. I renamed several variables in the household survey data set to make them more understandable. I also created the year variable for the household data to ensure that it matched up correctly with the weather data. For the flood and drought data, I grouped the occurrences by department instead of by municipality so they would match the household data, and I made the department character numeric for the merge. 
+
+
+``` {r merging datasets}
+total_2005 <- hh_2005 %>% 
+  left_join(flood_summary) %>%
+  left_join(drought_summary)
+
+export_summary_table(dfSummary(total_2005))
+
+save("total_2005", file = "processed_data/analysis_data.RData")
+
+```
+
+
+
+# Analysis Variables
+
+The variables used in the final analysis are the variables from the flood and drought summaries, showing the number of occurrences in each department per year. The other variables used are from the household data, showing demographic information as well as the dependent variables related to school assistance and registration. The variables "assist" and "register" tell whether the child is currently registered and attending school, and the variables "grade" and "literacy" give further educational information showing what grade the child is in and whether they can read and write. The variables "urb_rur" and "dept" give geographic information, indicating whether the child's household is located in an urban area or a rural area and in what department of the country they are living. Demographic variables such as age, sex, relation to the head of household, number of household members, and income can be used in the analysis as controls.
+
+
+# Discussion of Data
+
+The "assist" variable shows that around 60% of people who are registered for school currently assist, while 40% do not assist. The "reason" variable shows that two most common reasons for missing school are for work (31.3%) or vacation (20.5). Out of the people who are registered for school, 6.6% are repeating the grade they are currently in. 
+
+The patterns for households show that the average household has 5.3 members, and the average per capita monthly income per household is 258 bolivianos. Over half of the households in the sample are located in urban areas (56.3), while under half are located in rural areas (43.7). La Paz, Santa Cruz, and Cochabamba are the three departments with the most households in this sample, which corresponds to their overall population distribution.
+
+The patterns in the weather data show that every department experienced multiple floods in 2005, while many but not all experienced droughts. The place that experienced the highest number of flood occurrences overall was Cochabamba, while Beni experienced 13 droughts in 2005. 
+
+
