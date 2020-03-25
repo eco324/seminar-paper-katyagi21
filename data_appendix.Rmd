@@ -133,8 +133,6 @@ This data can be found at the following website: http://geosinager.defensacivil.
 
 ### Variable descriptions
 
-Create a bullet list with the name of each variable in the dataset followed by any information the user would need to understand it.
-
 - **dept:** department name 
 - **A_2005:** how many floods occurred in 2005 in that location 
 - **A_2006:** how many floods occurred in 2006 in that location 
@@ -173,8 +171,6 @@ This data can be obtained from http://geosinager.defensacivil.gob.bo/maps/225. I
 
 ### Variable descriptions
 
-Create a bullet list with the name of each variable in the dataset followed by any information the user would need to understand it.
-
 - **dept:** department name 
 - **A_2005:** how many droughts occurred in 2005 in that location 
 - **A_2006:** how many droughts occurred in 2006 in that location 
@@ -207,7 +203,6 @@ export_summary_table(dfSummary(drought_summary))
 
 To create a complete dataset, I merged the household data with the floods data and the droughts data. Before merging the data, I cut down the datasets to include only the relevant variables needed for analysis in each file. I renamed several variables in the household survey data set to make them more understandable. I also created the year variable for the household data to ensure that it matched up correctly with the weather data. For the flood and drought data, I grouped the occurrences by department instead of by municipality so they would match the household data, and I made the department character numeric for the merge. 
 
-*This section should include a discussion of the processing and merging steps needed to create your basic data. The code to implement these steps should be included in chunks in this section. Once the final merged data has been created, you should use the dfSummary function again to summarize the data you will be using. You should also save a file containing all the objects you will use in your final analysis to the processed_data folder.*
 
 ``` {r merging datasets}
 total_2005 <- hh_2005 %>% 
@@ -216,7 +211,9 @@ total_2005 <- hh_2005 %>%
 
 export_summary_table(dfSummary(total_2005))
 
-total_2005 <- readRDS(file = analysis_variables.rds")
+setwd(dir = "C:/Users/katya/Documents/MyDocuments/A Smith College Spring Semester/Natural Resource Economics/seminar-paper-katyagi21/processed_data/")
+
+total_2005 <- readRDS(file = "analysis_variables.rds")
 
 ```
 
@@ -226,7 +223,6 @@ total_2005 <- readRDS(file = analysis_variables.rds")
 
 The variables used in the final analysis are the variables from the flood and drought summaries, showing the number of occurrences in each department per year. The other variables used are from the household data, showing demographic information as well as the dependent variables related to school assistance and registration. The variables "assist" and "register" tell whether the child is currently registered and attending school, and the variables "grade" and "literacy" give further educational information showing what grade the child is in and whether they can read and write. The variables "urb_rur" and "dept" give geographic information, indicating whether the child's household is located in an urban area or a rural area and in what department of the country they are living. Demographic variables such as age, sex, relation to the head of household, number of household members, and income can be used in the analysis as controls.
 
-At the end of the section, you should save all of these variables in the processed_data folder of your repository.
 
 # Discussion of Data
 
