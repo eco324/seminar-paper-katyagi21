@@ -211,9 +211,7 @@ total_2005 <- hh_2005 %>%
 
 export_summary_table(dfSummary(total_2005))
 
-setwd(dir = "C:/Users/katya/Documents/MyDocuments/A Smith College Spring Semester/Natural Resource Economics/seminar-paper-katyagi21/processed_data/")
-
-total_2005 <- readRDS(file = "analysis_variables.rds")
+save("total_2005", file = "processed_data/analysis_data.RData")
 
 ```
 
