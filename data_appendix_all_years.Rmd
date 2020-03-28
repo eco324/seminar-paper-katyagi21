@@ -1,0 +1,571 @@
+---
+title: "Data Appendix to \"The impact of weather events on schooling outcomes\""
+author: "Katya Garcia-Israel"
+output: 
+  pdf_document:
+    toc: true
+    number_sections: true
+---
+
+```{r setup, echo = F, message = F}
+knitr::opts_chunk$set(results = 'asis', cache = F)
+library(tidyverse)
+library(summarytools)
+st_options(plain.ascii = F,
+           style = "rmarkdown",
+           footnote = NA,
+           subtitle.emphasis = F,
+           dfSummary.silent = T,
+           dfSummary.valid.col = F, 
+           tmp.img.dir = "./tmp",
+           dfSummary.style = "grid")
+
+# add haven package to make stata 16 version readable 
+library(foreign)
+library(haven)
+
+#The following custom function simplifies the process of writing dfSummaries to html files
+export_summary_table <- function(dfSummary_output){
+  data_info <- attr(dfSummary_output, "data_info")
+  ds_name <- data_info$Data.frame
+  print(dfSummary_output,
+      file = str_c("output/", ds_name, "_summary.html"),
+      method = "browser",
+      report.title = ds_name)
+}
+```
+
+```{r set dfSummary css style, echo = F, include = F}
+st_css()
+```
+# Appendix description
+This data appendix details the steps of collecting, processing, and merging the data needed to create the complete data set showing information about schooling and weather events. It concludes with a discussion of patterns found in the data.
+
+The datasets used directly by the final analysis are saved in `processed-data/` at the end of this file.
+
+# Raw data
+This section documents the datasets used in this analysis.
+
+## Household Survey data
+**Citation:** .  
+Instituto Nacional de Estadistica. (2005). Encuesta de Hogares (2005) [SAV file]. Retrieved from https://www.ine.gob.bo/index.php/banco/base-de-datos-sociales
+
+**Date Downloaded:** Downloaded September 2019.
+**Filename(s):** raw_data/filename.csv 
+**Unit of observation:** Unit of observation at the individual level, but each individual is identified mainly by the household id. 
+**Dates covered:** 2005 
+
+### To obtain a copy
+
+This household survey can be found on the Bolivian National Statistical Institute website, under the menu for 'Banco de Datos' and 'Base de datos de encuestas sociales.' Then the household surveys may be found for the years 2005-2018, excepting 2010.
+
+The original format of this data was from the sav file, but I imported it into Stata before importing the Stata format into R.
+
+### Variable descriptions
+
+- **hh_id:** The household ID, which is the same for each member of the household. It is made up of letters and numbers. 
+- **nro1:** The number of the person in each household.
+- **assist:** Binary variable, whether or not the individual assists school 
+- **urb_rur:** Binary variable, whether the household is in an urban or rural area
+- **reason:** the reason why the individual is not assisting school if they are not 
+- **members:** number of household members excluding servants 
+- **sex:** the sex of the individual, Male = 1, Female =2 
+- **age:** How old the individual is, in years 
+- **relation:** The relationship of the individual to the head of household 
+- **literacy:** Binary variable, whether a person can read and write 
+- **register:** Binary variable, whether an individual registered for school or not 
+- **grade:** For what grade is the person registered 
+- **repeated:** whether the person has repeated the grade they are currently registered in 
+- **dept:** the department in which the person lives 
+- **income:** the per capita monthly income for each household, in bolivianos
+
+
+### Data import code and summary
+
+```{r import household data 2005}
+data_2005 <- read_dta("Raw data/seminar_paper_data/2005_hhsurvey.dta") %>% 
+  rename(hh_id = folio,
+        assist = s3_08,  
+        reason = s3_09, 
+        members = nm_y,
+        sex = s1_02,
+        age = s1_03,
+        relation = s1_05,
+        literacy = s3_01,
+        register = s3_04,
+        grade = s3_05b,
+        repeated = s3_07,
+        income = y_perc1A) 
+
+hh_2005 <- data_2005 %>% 
+  select(hh_id, assist, reason, members, sex, age,
+         relation, literacy, register, grade, repeated, depto, urb_rur, income) %>% 
+  mutate(year = 2005,
+         hh_id = as.numeric(hh_id),
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"))
+```
+```{r export summary table 2005}
+export_summary_table(dfSummary(hh_2005))
+```
+
+
+```{r import household data 2006}
+data_2006 <- read_dta("Raw data/seminar_paper_data/2006_hhsurvey.dta")  %>% 
+  rename(hh_id = Folio,
+        assist = s4_08,  
+        reason = S4_09, 
+        members = mhogar,
+        sex = s1_02,
+        age = s1_03,
+        relation = s1_05,
+        literacy = s4_01,
+        register = s4_04,
+        grade = s4_05b,
+        repeated = s4_07,
+        income = yhogpcf,
+        urb_rur = Urb_Rur) 
+
+hh_2006 <- data_2006 %>% 
+  select(hh_id, assist, reason, members, sex, age,
+         relation, literacy, register, grade, repeated, ID01, urb_rur, income) %>% 
+  mutate(year = 2006,
+         hh_id = as.numeric(hh_id),
+         dept = case_when(ID01 == "1" ~ "Chuquisaca",
+                          ID01 == "2" ~ "La Paz",
+                          ID01 == "3" ~ "Cochabamba",
+                          ID01 == "4" ~ "Oruro",
+                          ID01 == "5" ~ "Potosi",
+                          ID01 == "6" ~ "Tarija",
+                          ID01 == "7" ~ "Santa Cruz",
+                          ID01 == "8" ~ "Beni",
+                          ID01 == "9" ~ "Pando"))
+```
+
+```{r exporting data table}
+export_summary_table(dfSummary(hh_2006))
+```
+
+```{r import household data 2007}
+data_2007 <- read_dta("Raw data/seminar_paper_data/2007_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist = s4_10,  
+        reason = s4_11, 
+        members = mhogar,
+        sex = s1_03,
+        age = s1_04,
+        relation = s1_06,
+        literacy = s4_01,
+        register = s4_06,
+        grade = s4_07b,
+        repeated = s4_09,
+        income = yhogpcf) 
+
+hh_2007 <- data_2007 %>% 
+  select(hh_id, assist, reason, members, sex, age,
+         relation, literacy, register, grade, repeated, depto, urb_rur, income) %>% 
+  mutate(year = 2007,
+        hh_id = as.numeric(hh_id),
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"))
+```
+
+```{r import household data 2011}
+data_2011 <- read_dta("Raw data/seminar_paper_data/2011_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist = s4_12,  
+        reason = s4_13,
+        sex = s1_03,
+        age = s1_04,
+        relation = s1_08,
+        literacy = s4_01,
+        register = s4_05,
+        grade = s4_06b,
+        repeated = s4_11a,
+        income = yhogpc,
+        school_level = s4_06a,
+        urb_rur = area) 
+
+hh_2011 <- data_2011 %>% 
+  select(hh_id, assist, reason, sex, age,
+         relation, literacy, register, grade, repeated, depto, urb_rur, income, school_level) %>% 
+  mutate(year = 2011,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"))
+```
+
+```{r import household data 2012}
+data_2012 <- read_dta("Raw data/seminar_paper_data/2012_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist = s4_12,  
+        reason = s4_13,
+        sex = s1_03,
+        age = s1_04,
+        relation = s1_08,
+        literacy = s4_01,
+        register = s4_04,
+        grade = s4_05b,
+        repeated = s4_11a,
+        income = yhogpc,
+        school_level = s4_05a,
+        urb_rur = area) 
+hh_2012 <- data_2012 %>% 
+  select(hh_id, assist, reason, sex, age,
+         relation, literacy, register, grade, repeated, departamento, urb_rur, income, school_level) %>% 
+  mutate(year = 2012,
+         dept = case_when(departamento == "1" ~ "Chuquisaca",
+                          departamento == "2" ~ "La Paz",
+                          departamento == "3" ~ "Cochabamba",
+                          departamento == "4" ~ "Oruro",
+                          departamento == "5" ~ "Potosi",
+                          departamento == "6" ~ "Tarija",
+                          departamento == "7" ~ "Santa Cruz",
+                          departamento == "8" ~ "Beni",
+                          departamento == "9" ~ "Pando"))
+```
+
+```{r import household data 2013}
+data_2013 <- read_dta("Raw data/seminar_paper_data/2013_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist = s5_10,  
+        reason = s5_11,
+        sex = s2_02,
+        age = s2_03,
+        relation = s2_05,
+        literacy = s5_01,
+        register = s5_04,
+        grade = s5_05b,
+        income = yhogpc,
+        school_level = s5_05a,
+        urb_rur = area) 
+hh_2013 <- data_2013 %>% 
+  select(hh_id, assist, reason, sex, age,
+         relation, literacy, register, grade, id01, urb_rur, income, school_level) %>% 
+  mutate(year = 2013,
+         dept = case_when(id01 == "1" ~ "Chuquisaca",
+                          id01 == "2" ~ "La Paz",
+                          id01 == "3" ~ "Cochabamba",
+                          id01 == "4" ~ "Oruro",
+                          id01 == "5" ~ "Potosi",
+                          id01 == "6" ~ "Tarija",
+                          id01 == "7" ~ "Santa Cruz",
+                          id01 == "8" ~ "Beni",
+                          id01 == "9" ~ "Pando"))
+```
+
+```{r import household survey 2014}
+data_2014 <- read_dta("Raw data/seminar_paper_data/2014_hhsurvey.dta") %>%
+  rename(hh_id = folio,
+        assist = s5b_10,  
+        reason = s5b_11,
+        sex = s2a_02,
+        age = s2a_03,
+        relation = s2a_05,
+        literacy = s5a_01,
+        register = s5a_04,
+        grade = s5a_05a,
+        income = yhogpc,
+        school_level = s5a_05,
+        urb_rur = URBRUR) 
+hh_2014 <- data_2014 %>% 
+  select(hh_id, assist, reason, sex, age,
+         relation, literacy, register, grade, DEPTO, urb_rur, income, school_level) %>% 
+  mutate(year = 2014,
+         dept = case_when(DEPTO == "1" ~ "Chuquisaca",
+                          DEPTO == "2" ~ "La Paz",
+                          DEPTO == "3" ~ "Cochabamba",
+                          DEPTO == "4" ~ "Oruro",
+                          DEPTO == "5" ~ "Potosi",
+                          DEPTO == "6" ~ "Tarija",
+                          DEPTO == "7" ~ "Santa Cruz",
+                          DEPTO == "8" ~ "Beni",
+                          DEPTO == "9" ~ "Pando"))
+```
+  
+```{r import household survey 2015}
+data_2015 <- read_dta("Raw data/seminar_paper_data/2015_hhsurvey.dta") %>%
+   rename(hh_id = folio,
+        assist = s5b_10,  
+        reason = s5b_11,
+        sex = s2a_02,
+        age = s2a_03,
+        relation = s2a_05,
+        literacy = s5a_1,
+        register = s5a_4,
+        grade = s5a_5b,
+        income = yhogpc,
+        school_level = s5a_5a,
+        urb_rur = area) 
+hh_2015 <- data_2015 %>% 
+  select(hh_id, assist, reason, sex, age,
+         relation, literacy, register, grade, departamento, urb_rur, income, school_level) %>% 
+  mutate(year = 2015,
+         dept = case_when(departamento == "1" ~ "Chuquisaca",
+                          departamento == "2" ~ "La Paz",
+                          departamento == "3" ~ "Cochabamba",
+                          departamento == "4" ~ "Oruro",
+                          departamento == "5" ~ "Potosi",
+                          departamento == "6" ~ "Tarija",
+                          departamento == "7" ~ "Santa Cruz",
+                          departamento == "8" ~ "Beni",
+                          departamento == "9" ~ "Pando"))
+
+```
+
+```{r import household data 2016}
+data_2016 <- read_dta("Raw data/seminar_paper_data/2016_hhsurvey.dta")  %>%
+   rename(hh_id = folio,
+        assist = s05b_10,  
+        reason = s05b_11,
+        sex = s02a_02,
+        age = s02a_03,
+        relation = s02a_05,
+        literacy = s05a_01,
+        register = s05a_05,
+        grade = s05a_06b,
+        income = yhogpc,
+        school_level = s05a_06a,
+        urb_rur = area) 
+hh_2016 <- data_2016 %>% 
+  select(hh_id, assist, reason, sex, age,
+         relation, literacy, register, grade, depto, urb_rur, income, school_level) %>% 
+  mutate(year = 2016,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"))
+
+```
+
+```{r import household survey 2017}
+data_2017 <- read_dta("Raw data/seminar_paper_data/2017_hhsurvey.dta")  %>%
+  rename(hh_id = folio,
+        assist = s05b_10,  
+        reason = s05b_11,
+        sex = s02a_02,
+        age = s02a_03,
+        relation = s02a_05,
+        literacy = s05a_01,
+        register = s05a_05,
+        grade = s05a_06b,
+        income = yhogpc,
+        school_level = s05a_06a,
+        urb_rur = area) 
+hh_2017 <- data_2017 %>% 
+  select(hh_id, assist, reason, sex, age,
+         relation, literacy, register, grade, depto, urb_rur, income, school_level) %>% 
+  mutate(year = 2017,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"))
+  
+```
+
+```{r import household data 2018}
+data_2018 <- read_dta("Raw data/seminar_paper_data/2018_hhsurvey.dta")  %>%
+  rename(hh_id = folio,
+        assist = s05b_10,  
+        reason = s05b_11,
+        sex = s02a_02,
+        age = s02a_03,
+        relation = s02a_05,
+        literacy = s05a_01,
+        register = s05a_05,
+        grade = s05a_06c,
+        income = yhogpc,
+        school_level = s05a_06a,
+        urb_rur = area) 
+hh_2018 <- data_2018 %>% 
+  select(hh_id, assist, reason, sex, age,
+         relation, literacy, register, grade, depto, urb_rur, income, school_level) %>% 
+  mutate(year = 2018,
+         hh_id = as.numeric(hh_id),
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"))
+```
+
+```{r merge household datasets}
+```
+
+{r import household survey 2008}
+data_2008 <- read_dta("Raw data/seminar_paper_data/2008_hhsurvey.dta")  %>% 
+  rename(hh_id = FOLIO,
+        assist = S4_13,  
+        reason = S4_14, 
+        members = MHOGAR,
+        sex = S1_03,
+        age = S1_04,
+        relation = S1_06,
+        literacy = S4_01,
+        register = S4_05,
+        grade = S4_06B,
+        repeated = S4_12,
+        income = YHOGPCF) 
+
+hh_2008 <- data_2008 %>% 
+  select(hh_id, assist, reason, members, sex, age,
+         relation, literacy, register, grade, repeated, depto, urb_rur, income) %>% 
+  mutate(year = 2008,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"))
+```
+## Flood data
+**Citation:** GeoSinager. (2016). Mapa Recurrencias de Inundaciones Gestiones 2002-2012. [CSV file]. Retrieved from http://geosinager.defensacivil.gob.bo/maps/226
+
+**Date Downloaded:** October 2019
+**Filename(s):** raw_data/filename.csv 
+**Unit of observation:** Municipality  
+**Dates covered:** 2002-2012
+
+### To obtain a copy
+
+This data can be found at the following website: http://geosinager.defensacivil.gob.bo/maps/226. It is associated with a map showing the flood occurrences information spatially, and to get the data in a non-spatial format, the flood layer should be downloaded. It may be downloaded in a variety of different formats, including csv.
+
+
+### Variable descriptions
+
+- **dept:** department name 
+- **A_2005:** how many floods occurred in 2005 in that location 
+- **A_2006:** how many floods occurred in 2006 in that location 
+- **A_2007:** how many floods occurred in 2007 in that location 
+- **A_2008:** how many floods occurred in 2008 in that location 
+- **A_2009:** how many floods occurred in 2009 in that location 
+- **A_2010:** how many floods occurred in 2010 in that location 
+- **A_2011:** how many floods occurred in 2011 in that location 
+- **A_2012:** how many floods occurred in 2012 in that location 
+
+### Data import code and summary
+```{r import flood data}
+flood <- read_csv(file.path("Raw data", "recurrencia_inundacion2002_2012bol.csv")) %>% 
+  rename(dept = NOM_DEP)
+
+flood_summary <- flood %>% 
+  group_by(dept) %>% 
+  summarize_at(vars(starts_with("A_")), sum) %>% 
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "floods") %>%
+  mutate(year = as.numeric(year))
+
+export_summary_table(dfSummary(flood_summary))
+```
+
+
+## Drought data
+**Citation:** GeoSinager. (2016). Mapa Recurrencias de Sequias Gestiones 2002-2012. [CSV file]. Retrieved from http://geosinager.defensacivil.gob.bo/maps/225
+
+**Date Downloaded:** October 2019.  
+**Filename(s):** Raw data/droughts.csv 
+**Unit of observation:** The unit of observation is the municipality 
+**Dates covered:** 2002-2012  
+
+### To obtain a copy
+
+This data can be obtained from http://geosinager.defensacivil.gob.bo/maps/225. It is shown on a map with different layers, and the raw data may be downloaded in a variety of different forms, including csv. 
+
+
+### Variable descriptions
+
+- **dept:** department name 
+- **A_2005:** how many droughts occurred in 2005 in that location 
+- **A_2006:** how many droughts occurred in 2006 in that location 
+- **A_2007:** how many droughts occurred in 2007 in that location 
+- **A_2008:** how many droughts occurred in 2008 in that location 
+- **A_2009:** how many droughts occurred in 2009 in that location 
+- **A_2010:** how many droughts occurred in 2010 in that location 
+- **A_2011:** how many droughts occurred in 2011 in that location 
+- **A_2012:** how many droughts occurred in 2012 in that location 
+
+```{r importing droughts data, echo = F, message = F}
+#drought data set 
+library(readxl)
+drought <- read_excel(file.path("Raw data", "recurrenciasequia_2002_2012bol (1).xls")) %>% 
+#rename variables
+    rename(dept = NOM_DEP)
+
+drought_summary <- drought %>%
+  group_by(dept) %>% 
+  summarize_at(vars(starts_with("A_")), sum) %>%
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "droughts") %>%
+  mutate(year = as.numeric(year))
+
+export_summary_table(dfSummary(drought_summary))
+
+```
+
+# Data Processing and Combination
+
+To create a complete dataset, I merged the household data with the floods data and the droughts data. Before merging the data, I cut down the datasets to include only the relevant variables needed for analysis in each file. I renamed several variables in the household survey data set to make them more understandable. I also created the year variable for the household data to ensure that it matched up correctly with the weather data. For the flood and drought data, I grouped the occurrences by department instead of by municipality so they would match the household data, and I made the department character numeric for the merge. 
+
+
+``` {r merging datasets}
+total_2005 <- hh_2005 %>% 
+  left_join(flood_summary) %>%
+  left_join(drought_summary)
+
+export_summary_table(dfSummary(total_2005))
+
+save("total_2005", file = "processed_data/analysis_data.RData")
+
+```
+
+
+
+# Analysis Variables
+
+The variables used in the final analysis are the variables from the flood and drought summaries, showing the number of occurrences in each department per year. The other variables used are from the household data, showing demographic information as well as the dependent variables related to school assistance and registration. The variables "assist" and "register" tell whether the child is currently registered and attending school, and the variables "grade" and "literacy" give further educational information showing what grade the child is in and whether they can read and write. The variables "urb_rur" and "dept" give geographic information, indicating whether the child's household is located in an urban area or a rural area and in what department of the country they are living. Demographic variables such as age, sex, relation to the head of household, number of household members, and income can be used in the analysis as controls.
+
+
+# Discussion of Data
+
+The "assist" variable shows that around 60% of people who are registered for school currently assist, while 40% do not assist. The "reason" variable shows that two most common reasons for missing school are for work (31.3%) or vacation (20.5). Out of the people who are registered for school, 6.6% are repeating the grade they are currently in. 
+
+The patterns for households show that the average household has 5.3 members, and the average per capita monthly income per household is 258 bolivianos. Over half of the households in the sample are located in urban areas (56.3), while under half are located in rural areas (43.7). La Paz, Santa Cruz, and Cochabamba are the three departments with the most households in this sample, which corresponds to their overall population distribution.
+
+The patterns in the weather data show that every department experienced multiple floods in 2005, while many but not all experienced droughts. The place that experienced the highest number of flood occurrences overall was Cochabamba, while Beni experienced 13 droughts in 2005. 
+
+
