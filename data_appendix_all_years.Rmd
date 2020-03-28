@@ -112,6 +112,14 @@ hh_2005 <- data_2005 %>%
                           depto == "8" ~ "Beni",
                           depto == "9" ~ "Pando"))
 ```
+
+```{r recoding categorical variables 2005}
+hh_2005
+reason <- as.factor(c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
+recode(reason, "1='vacation'; 2 = 'money'; 3 = 'work'; 4 = 'sickness/accident/disability'; 5 ='distance'; 6 = 'finished'; 7 = 'age'; 8 = 'not interested'; 9 = 'housework/childcare'; 10 = 'other'") 
+
+```
+
 ```{r export summary table 2005}
 export_summary_table(dfSummary(hh_2005))
 ```
