@@ -110,13 +110,29 @@ hh_2005 <- data_2005 %>%
                           depto == "6" ~ "Tarija",
                           depto == "7" ~ "Santa Cruz",
                           depto == "8" ~ "Beni",
-                          depto == "9" ~ "Pando"))
+                          depto == "9" ~ "Pando"),
+         reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work',
+                            reason == 4 ~ 'sickness/accident/disability',
+                            reason == 5 ~ 'distance', 
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested',
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'))
 ```
 
-```{r recoding categorical variables 2005}
-hh_2005
+Note: remove this section after reading it. I added the code for recoding the variable in the above section, but for learning purposes I wanted to tell you what the code you had does:
+
+hh_2005 
+prints the head of the hh_2005 data to the console but doesn't do anything with the data
+
 reason <- as.factor(c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
+creates a new object called reason that is a factor vector containing the numbers 1-10. But this line doesn't know that this is connected to the hh_2005 dataset. Notice that above, I used the pipe operator to tell R to take the dataset we had been working with and then recode a variable from that dataset
+
 recode(reason, "1='vacation'; 2 = 'money'; 3 = 'work'; 4 = 'sickness/accident/disability'; 5 ='distance'; 6 = 'finished'; 7 = 'age'; 8 = 'not interested'; 9 = 'housework/childcare'; 10 = 'other'") 
+returns an error because the list of reasons and numbers are one long character string that R can't parse and because the haven package creates objects that don't work with some of the R functions (like recode, apparently)
 
 ```
 
