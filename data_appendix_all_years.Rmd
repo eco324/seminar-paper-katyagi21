@@ -305,8 +305,10 @@ hh_2012 <- data_2012 %>%
 
 ```{r combine household datasets}
 all_years <- hh_2005 %>% 
+  rbind(hh_2005, hh_2006, hh_2007, hh_2011, hh_2012)
   #bind_rows(hh_2005, hh_2006, hh_2007, hh_2011, hh_2012)
-  rbind(hh_2005, hh_2006) 
+  #rbind(hh_2005, hh_2006) 
+
 
 ```
 
@@ -420,10 +422,29 @@ hh_head <- subset(total_data, relation == 1, select = c("hh_id", "sex", "age", "
 
 ```
 
+
 ```{r creating children subset}
 
-children <- subset(total_data, age < 18 & age > 4, select = c("hh_id", "age", "sex", "literacy", "dept", "urb_rur", "income", "assist", "reason", "register", "school_level", "grade", "repeated", "floods", "droughts")) 
+children <- subset(total_data, age < 18 & age > 4, select = c("hh_id", "age", "sex", "relation", "literacy", "dept", "urb_rur", "income", "assist", "reason", "register", "school_level", "grade", "repeated", "floods", "droughts", "year"))
                 
+```
+
+```{r combining household head characteristics with children dataset}
+hh_head_2 <- hh_head %>%
+  select(sex, age, literacy, hh_id) %>%
+  rename (female_parent = sex,
+          parent_age = age,
+          parent_literacy = literacy)
+
+total_children <- children %>%
+  left_join(hh_head_2)
+
+
+```
+```{r creating summary statistics}
+
+export_summary_table(dfSummary(total_children))
+
 ```
 
 # Discussion of Data
