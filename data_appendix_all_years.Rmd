@@ -506,7 +506,11 @@ library(dplyr)
 
 ```{r regression variable specifications}
 total_subset %>%
-  mutate(ln_income = log(income))
+  mutate(ln_income = log(income),
+         literate = literacy-1,
+         female = sex-1,
+         no_assist = assist-1,
+         not_registered = register-1)
 reg_data <- total_subset %>%
   mutate(year_factor = as.factor(year))
 
