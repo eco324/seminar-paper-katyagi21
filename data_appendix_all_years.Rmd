@@ -1,10 +1,13 @@
----
-title: "Data Appendix to \"The impact of weather events on schooling outcomes\""
+
+title: "Data Appendix to "The impact of weather events on schooling outcomes""
 author: "Katya Garcia-Israel"
-output: 
+output:
+  html_document:
+    toc: yes
+    df_print: paged
   pdf_document:
-    toc: true
-    number_sections: true
+    toc: yes
+    number_sections: yes
 ---
 
 ```{r setup, echo = F, message = F}
@@ -494,14 +497,20 @@ total_subset <- total %>% distinct()
 
 ```{r creating summary statistics}
 
-export_summary_table(dfSummary(total_children))
+export_summary_table(dfSummary(total_subset))
+
+install.packages("stargazer")
+library(stargazer)
+stargazer(attitude)
 
 ```
 
 
 ```{r regression variable specifications}
+total_subset %>%
+  mutate(ln_income = log(income))
 reg_data <- total_subset %>%
-  mutate(lny = log(income))
+  mutate(year_factor = as.factor(year))
 ```
 
 ```{r regressions total sample}
@@ -510,13 +519,20 @@ reg_data <- total_subset %>%
 #model_levels <- lm(recreation_visits ~ svr_median + svr_p10 + month_code*unit_code, data = regression_data)
 
 
-model_simple <- lm(assist ~ floods + droughts, data = reg_data)
+model_simple <- lm(assist ~ floods + droughts + year, data = reg_data)
 summary(model_simple)
-model_all <- lm(assist ~ floods + droughts + sex + age + lny + hhhead_educ + female_hhhead + urb_rur, data = reg_data)
-summary(model_all)
-model_register <- lm(register ~ floods + droughts + sex + age + lny + hhhead_educ + female_hhhead + urb_rur, data = reg_data)
-summary(model_register)
+model_assist <- lm(assist ~ floods + droughts + age + sex + income + hhhead_educ + female_hhhead + urb_rur + year, data = reg_data)
+print(model_assist)
+model_register <- lm(register ~ floods + droughts + age + sex + income + hhhead_educ + female_hhhead + urb_rur + year, data = reg_data)
+print(model_register)
 
+```
+```{r generate regression table, echo = F, results = "asis"}
+stargazer::stargazer(list(model_assist, model_register), 
+               title = "Full sample regression results", 
+               label = "fullResults",
+               header = F,
+               keep = c("floods", "droughts"))
 ```
 
 ```{r regression rural sample}
