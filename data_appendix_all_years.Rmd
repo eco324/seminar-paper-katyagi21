@@ -457,7 +457,15 @@ hh_head <- subset(total_data, relation == 1, select = c("hh_id", "sex", "age", "
 
 children <- subset(total_data, age < 18 & age > 4, select = c("hh_id", "age", "sex", "relation", "literacy", "dept", "urb_rur", "income", "assist", "reason", "register", "school_level", "grade", "repeated", "floods", "droughts", "year", "job", "tasks"))
 
-total_children <- mutate(children, id = rownames(children))
+household_counts <- children %>%
+group_by(hh_id) %>%
+summarize(num_children = n())
+
+
+children_id <- mutate(children, id = rownames(children))
+  
+total_children <- merge(children_id,household_counts, by="hh_id")
+
                 
 ```
 
@@ -470,11 +478,15 @@ hh_head_2 <- hh_head %>%
           hhhead_educ = educ,
           hhhead_job = job,
           hhhead_tasks = tasks)
+total_heads_subset <- hh_head_2 %>% distinct()
 
-total <- total_children %>%
-  left_join(hh_head_2)
+#total <- total_children %>%
+  #left_join(hh_head_2)
+#left join command creating the duplicates problem it seems 
+total <- merge(total_children,hh_head_2, by="hh_id")
 
-#total <- merge(children,hh_head_2, by="hh_id")
+total_subset <- total %>% distinct()
+
 
 
 ```
@@ -488,7 +500,7 @@ export_summary_table(dfSummary(total_children))
 
 
 ```{r regression variable specifications}
-reg_data <- total %>%
+reg_data <- total_subset %>%
   mutate(lny = log(income))
 ```
 
