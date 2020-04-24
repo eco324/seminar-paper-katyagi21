@@ -340,9 +340,8 @@ hh_2012 <- data_2012 %>%
 
 ```{r combine household datasets}
 all_years <- hh_2005 %>% 
-  rbind(hh_2005, hh_2006, hh_2007, hh_2011, hh_2012)
+  rbind(hh_2005, hh_2006, hh_2007, hh_2011, hh_2012) %>%
  
-
 
 ```
 
@@ -486,24 +485,23 @@ total_heads_subset <- hh_head_2 %>% distinct()
 #total <- total_children %>%
   #left_join(hh_head_2)
 #left join command creating the duplicates problem it seems 
-total <- merge(total_children,hh_head_2, by="hh_id")
+total <- merge(total_children,hh_head_2, by="hh_id") 
 
 total_subset <- total %>% distinct()
 
 
-
 ```
 
 
-```{r creating summary statistics}
-
+{r creating summary statistics}
 export_summary_table(dfSummary(total_subset))
 
-install.packages("stargazer")
-library(stargazer)
-stargazer(attitude)
+install.packages("devtools")
+devtools::install_github("ewenharrison/finalfit")
+library(finalfit)
+library(dplyr)
 
-```
+
 
 
 ```{r regression variable specifications}
@@ -511,6 +509,7 @@ total_subset %>%
   mutate(ln_income = log(income))
 reg_data <- total_subset %>%
   mutate(year_factor = as.factor(year))
+
 ```
 
 ```{r regressions total sample}
@@ -518,15 +517,15 @@ reg_data <- total_subset %>%
 #example code:
 #model_levels <- lm(recreation_visits ~ svr_median + svr_p10 + month_code*unit_code, data = regression_data)
 
-
-model_simple <- lm(assist ~ floods + droughts + year, data = reg_data)
-summary(model_simple)
-model_assist <- lm(assist ~ floods + droughts + age + sex + income + hhhead_educ + female_hhhead + urb_rur + year, data = reg_data)
-print(model_assist)
-model_register <- lm(register ~ floods + droughts + age + sex + income + hhhead_educ + female_hhhead + urb_rur + year, data = reg_data)
-print(model_register)
+#model_simple <- lm(assist ~ floods + droughts + year, data = reg_data)
+#summary(model_simple)
+#model_assist <- lm(assist ~ floods + droughts + age + sex + income + hhhead_educ + female_hhhead + year, data = reg_data)
+#summary(model_assist)
+model_register <- lm(register ~ floods + droughts + age + sex + income + hhhead_educ + female_hhhead + year, data = reg_data)
+summary(model_register)
 
 ```
+
 ```{r generate regression table, echo = F, results = "asis"}
 stargazer::stargazer(list(model_assist, model_register), 
                title = "Full sample regression results", 
@@ -536,6 +535,13 @@ stargazer::stargazer(list(model_assist, model_register),
 ```
 
 ```{r regression rural sample}
+
+rural <- subset(reg_data, urb_rur == 2, select = c("hh_id", "id", "age", "sex", "literacy", "dept", "urb_rur", "income", "assist", "register", "floods", "droughts", "year", "job", "tasks", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor"))
+
+model_assist_r <- lm(assist ~ floods + droughts + age + sex + income + hhhead_educ + female_hhhead + urb_rur + year, data = reg_data)
+summary(model_assist_r)
+model_register_r <- lm(register ~ floods + droughts + age + sex + income + hhhead_educ + female_hhhead + urb_rur + year, data = reg_data)
+summary(model_register_r)
 
 ```
 
