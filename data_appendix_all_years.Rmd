@@ -493,20 +493,18 @@ reg_data <- total %>%
 ```
 
 ```{r regressions total sample}
-install.packages("plm")
-library(plm)
+
 #example code:
 #model_levels <- lm(recreation_visits ~ svr_median + svr_p10 + month_code*unit_code, data = regression_data)
-#grun.fe <- plm(inv~value+capital, data = Grunfeld, model = "within")
 
-#set as panel data
-panel <- plm.data(reg_data, index = c("id", "year"))
-model_simple <- plm(assist ~ floods + droughts, data = reg_data, model = "within")
+
+model_simple <- lm(assist ~ floods + droughts, data = reg_data)
 summary(model_simple)
-model_all <- plm(assist ~ floods + droughts + sex + age + lny + hhhead_educ + female_hhhead + urb_rur, data = reg_data, model = "within")
+model_all <- lm(assist ~ floods + droughts + sex + age + lny + hhhead_educ + female_hhhead + urb_rur, data = reg_data)
 summary(model_all)
-model_register <- plm(register ~ floods + droughts + sex + age + lny + hhhead_educ + female_hhhead + urb_rur, data = reg_data, model = "within")
+model_register <- lm(register ~ floods + droughts + sex + age + lny + hhhead_educ + female_hhhead + urb_rur, data = reg_data)
 summary(model_register)
+
 ```
 
 ```{r regression rural sample}
