@@ -340,7 +340,7 @@ hh_2012 <- data_2012 %>%
 
 ```{r combine household datasets}
 all_years <- hh_2005 %>% 
-  rbind(hh_2005, hh_2006, hh_2007, hh_2011, hh_2012) %>%
+  rbind(hh_2005, hh_2006, hh_2007, hh_2011, hh_2012) 
  
 
 ```
@@ -505,15 +505,14 @@ library(dplyr)
 
 
 ```{r regression variable specifications}
-total_subset %>%
-  mutate(ln_income = log(income),
-         literate = literacy-1,
-         female = sex-1,
-         no_assist = assist-1,
-         not_registered = register-1)
-#trying to make the assist, register, sex, and literacy variables into 0 1 binary variables, with assist and register = 1, sex = 1 if female, and literacy = 1 if literate. The current coding from the original data is all in 1 2 format, with the opposites. Trying to change it by subtracting doesn't seem to be working.
 reg_data <- total_subset %>%
-  mutate(year_factor = as.factor(year))
+  mutate(ln_income = log(income),
+         literate = literacy - 1,
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         no_assist = assist - 1,
+         not_registered = register - 1,
+         year_factor = as.factor(year))
 
 ```
 
