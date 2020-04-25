@@ -512,8 +512,10 @@ total_subset %>%
          no_assist = assist-1,
          not_registered = register-1)
 #trying to make the assist, register, sex, and literacy variables into 0 1 binary variables, with assist and register = 1, sex = 1 if female, and literacy = 1 if literate. The current coding from the original data is all in 1 2 format, with the opposites. Trying to change it by subtracting doesn't seem to be working.
+
 reg_data <- total_subset %>%
   mutate(year_factor = as.factor(year))
+
 
 ```
 
