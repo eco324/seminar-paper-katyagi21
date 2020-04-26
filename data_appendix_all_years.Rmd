@@ -88,14 +88,14 @@ The original format of this data was from the sav file, but I imported it into S
 ```{r import household data 2005}
 data_2005 <- read_dta("Raw data/seminar_paper_data/2005_hhsurvey.dta") %>% 
   rename(hh_id = folio,
-        assist = s3_08,  
+        assist1 = s3_08,  
         reason = s3_09, 
         members = nm_y,
         sex = s1_02,
         age = s1_03,
         relation = s1_05,
-        literacy = s3_01,
-        register = s3_04,
+        literacy1 = s3_01,
+        register1 = s3_04,
         school_level = s3_05a,
         grade = s3_05b,
         repeated = s3_07,
@@ -107,8 +107,8 @@ data_2005 <- read_dta("Raw data/seminar_paper_data/2005_hhsurvey.dta") %>%
         extr_pov = z_ext) 
 
 hh_2005 <- data_2005 %>% 
-  select(hh_id, assist, reason, sex, age,
-         relation, literacy, register, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
   mutate(year = 2005,
          dept = case_when(depto == "1" ~ "Chuquisaca",
                           depto == "2" ~ "La Paz",
@@ -128,7 +128,21 @@ hh_2005 <- data_2005 %>%
                             reason == 7 ~ 'age',
                             reason == 8 ~ 'not interested', 
                             reason == 9 ~ 'housework/childcare',
-                            reason == 10 ~ 'other'))
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         assist = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 17 ~ 1,
+                             school_level != 17 ~ 0),
+         secondary = case_when(school_level == 18 ~ 1,
+                               school_level != 18 ~ 0))
               
 ```
 
@@ -143,14 +157,14 @@ export_summary_table(dfSummary(hh_2005))
 ```{r import household data 2006}
 data_2006 <- read_dta("Raw data/seminar_paper_data/2006_hhsurvey.dta")  %>% 
   rename(hh_id = Folio,
-        assist = s4_08,  
+        assist1 = s4_08,  
         reason = S4_09, 
         members = mhogar,
         sex = s1_02,
         age = s1_03,
         relation = s1_05,
-        literacy = s4_01,
-        register = s4_04,
+        literacy1 = s4_01,
+        register1 = s4_04,
         school_level = s4_05a,
         grade = s4_05b,
         repeated = s4_07,
@@ -164,8 +178,8 @@ data_2006 <- read_dta("Raw data/seminar_paper_data/2006_hhsurvey.dta")  %>%
         extr_pov = zext) 
 
 hh_2006 <- data_2006 %>% 
-  select(hh_id, assist, reason, sex, age,
-         relation, literacy, register, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
   mutate(year = 2006,
          dept = case_when(depto == "1" ~ "Chuquisaca",
                           depto == "2" ~ "La Paz",
@@ -185,7 +199,21 @@ hh_2006 <- data_2006 %>%
                             reason == 7 ~ 'age',
                             reason == 8 ~ 'not interested', 
                             reason == 9 ~ 'housework/childcare',
-                            reason == 10 ~ 'other'))
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         assist = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 17 ~ 1,
+                             school_level != 17 ~ 0),
+         secondary = case_when(school_level == 18 ~ 1,
+                               school_level != 18 ~ 0))
 ```
 
 ```{r exporting data table}
@@ -195,14 +223,14 @@ export_summary_table(dfSummary(hh_2006))
 ```{r import household data 2007}
 data_2007 <- read_dta("Raw data/seminar_paper_data/2007_hhsurvey.dta")  %>% 
   rename(hh_id = folio,
-        assist = s4_10,  
+        assist1 = s4_10,  
         reason = s4_11, 
         members = mhogar,
         sex = s1_03,
         age = s1_04,
         relation = s1_06,
-        literacy = s4_01,
-        register = s4_06,
+        literacy1 = s4_01,
+        register1 = s4_06,
         school_level = s4_07a,
         grade = s4_07b,
         repeated = s4_09,
@@ -215,8 +243,8 @@ data_2007 <- read_dta("Raw data/seminar_paper_data/2007_hhsurvey.dta")  %>%
         extr_pov = zext) 
 
 hh_2007 <- data_2007 %>% 
-  select(hh_id, assist, reason, sex, age,
-         relation, literacy, register, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
   mutate(year = 2007,
          dept = case_when(depto == "1" ~ "Chuquisaca",
                           depto == "2" ~ "La Paz",
@@ -236,19 +264,33 @@ hh_2007 <- data_2007 %>%
                             reason == 7 ~ 'age',
                             reason == 8 ~ 'not interested', 
                             reason == 9 ~ 'housework/childcare',
-                            reason == 10 ~ 'other'))
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         assist = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 17 ~ 1,
+                             school_level != 17 ~ 0),
+         secondary = case_when(school_level == 18 ~ 1,
+                               school_level != 18 ~ 0))
 ```
 
 ```{r import household data 2011}
 data_2011 <- read_dta("Raw data/seminar_paper_data/2011_hhsurvey.dta")  %>% 
   rename(hh_id = folio,
-        assist = s4_12,  
+        assist1 = s4_12,  
         reason = s4_13,
         sex = s1_03,
         age = s1_04,
         relation = s1_08,
-        literacy = s4_01,
-        register = s4_05,
+        literacy1 = s4_01,
+        register1 = s4_05,
         grade = s4_06b,
         repeated = s4_11a,
         income = yhogpc,
@@ -264,8 +306,8 @@ data_2011 <- read_dta("Raw data/seminar_paper_data/2011_hhsurvey.dta")  %>%
         extr_pov = zext) 
 
 hh_2011 <- data_2011 %>% 
-  select(hh_id, assist, reason, sex, age,
-         relation, literacy, register, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
   mutate(year = 2011,
          dept = case_when(depto == "1" ~ "Chuquisaca",
                           depto == "2" ~ "La Paz",
@@ -285,19 +327,33 @@ hh_2011 <- data_2011 %>%
                             reason == 7 ~ 'age',
                             reason == 8 ~ 'not interested', 
                             reason == 9 ~ 'housework/childcare',
-                            reason == 10 ~ 'other'))
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                               literacy1 == 2 ~ 0), 
+          female = case_when(sex == 2 ~ 1,
+                             sex == 1 ~ 0),
+           rural = case_when(urb_rur == 1 ~ 0,
+                             urb_rur == 2 ~ 1), 
+           assist = case_when(assist1 == 1 ~ 1,
+                              assist1 == 2 ~ 0),
+           register = case_when(register1 == 1 ~ 1,
+                                register1 == 2 ~ 0),
+         primary = case_when(school_level == 16 ~ 1,
+                             school_level != 16 ~ 0),
+         secondary = case_when(school_level == 17 ~ 1,
+                               school_level != 17 ~ 0))
 ```
 
 ```{r household data 2012}
 data_2012 <- read_dta("Raw data/seminar_paper_data/2012_hhsurvey.dta")  %>% 
   rename(hh_id = folio,
-        assist = s4_12,  
+        assist1 = s4_12,  
         reason = s4_13,
         sex = s1_03,
         age = s1_04,
         relation = s1_08,
-        literacy = s4_01,
-        register = s4_04,
+        literacy1 = s4_01,
+        register1 = s4_04,
         grade = s4_05b,
         repeated = s4_11a,
         income = yhogpc,
@@ -314,8 +370,8 @@ data_2012 <- read_dta("Raw data/seminar_paper_data/2012_hhsurvey.dta")  %>%
         extr_pov = zext) 
 
 hh_2012 <- data_2012 %>% 
-  select(hh_id, assist, reason, sex, age,
-         relation, literacy, register, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
   mutate(year = 2012,
          dept = case_when(depto== "1" ~ "Chuquisaca",
                           depto == "2" ~ "La Paz",
@@ -335,7 +391,22 @@ hh_2012 <- data_2012 %>%
                             reason == 7 ~ 'age',
                             reason == 8 ~ 'not interested', 
                             reason == 9 ~ 'housework/childcare',
-                            reason == 10 ~ 'other'))
+                            reason == 10 ~ 'other'),
+         literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         assist = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 19 ~ 1,
+                             school_level != 19 ~ 0),
+         secondary = case_when(school_level == 20 ~ 1,
+                               school_level != 20 ~ 0))
+
 ```
 
 ```{r combine household datasets}
@@ -435,9 +506,29 @@ To create a complete dataset, I merged the household data with the floods data a
 ``` {r merging datasets}
 total_data<- all_years %>% 
   left_join(flood_summary) %>%
-  left_join(drought_summary)
+  left_join(drought_summary) %>%
+  mutate(child = case_when(relation == 3 ~ 1,
+                           relation != 3 ~ 0),
+         grandchild = case_when(relation == 8 ~ 1,
+                                relation != 8 ~ 0),
+         pov_diff = income - pov_line,
+         pov = case_when(pov_diff > 0 ~ 0,
+                         pov_diff < 0 ~ 1),
+         extr_diff = income - extr_pov,
+         extr = case_when (extr_diff > 0 ~ 0,
+                           extr_diff < 0 ~ 1),
+                  work_reason = case_when(reason == "work" ~ 1,
+                                 reason != "work" ~ 0),
+         money_reason = case_when(reason == "money" ~ 1, 
+                                  reason != "money" ~ 0),
+         lny = log(income))
+
+total_data %>%
+  group_by(work_reason, money_reason) %>%
+  summarise(n = n())
 
 export_summary_table(dfSummary(total_data))
+
 
 save("total_data", file = "processed_data/analysis_data.RData")
 
@@ -448,16 +539,18 @@ save("total_data", file = "processed_data/analysis_data.RData")
 
 The variables used in the final analysis are the variables from the flood and drought summaries, showing the number of occurrences in each department per year. The other variables used are from the household data, showing demographic information as well as the dependent variables related to school assistance and registration. The variables "assist" and "register" tell whether the child is currently registered and attending school, and the variables "grade" and "literacy" give further educational information showing what grade the child is in and whether they can read and write. The variables "urb_rur" and "dept" give geographic information, indicating whether the child's household is located in an urban area or a rural area and in what department of the country they are living. Demographic variables such as age, sex, relation to the head of household, number of household members, and income can be used in the analysis as controls.
 
+
+
 ```{r creating head of household subset}
 
-hh_head <- subset(total_data, relation == 1, select = c("hh_id", "sex", "age", "literacy", "dept", "urb_rur", "income", "year", "educ", "job", "tasks", "pov_line", "extr_pov"))
+hh_head <- subset(total_data, relation == 1, select = c("hh_id", "female", "age", "literacy", "dept", "rural", "income", "year", "educ", "job", "tasks", "pov_diff", "extr_diff", "pov", "extr"))
 
 ```
 
 
 ```{r creating children subset}
 
-children <- subset(total_data, age < 18 & age > 4, select = c("hh_id", "age", "sex", "relation", "literacy", "dept", "urb_rur", "income", "assist", "reason", "register", "school_level", "grade", "repeated", "floods", "droughts", "year", "job", "tasks"))
+children <- subset(total_data, age < 18 & age > 4, select = c("hh_id", "age", "female", "child", "grandchild", "literacy", "dept", "rural", "income", "assist", "reason", "register", "primary", "secondary", "floods", "droughts", "year", "job", "tasks", "money_reason", "work_reason"))
 
 household_counts <- children %>%
 group_by(hh_id) %>%
@@ -468,13 +561,20 @@ children_id <- mutate(children, id = rownames(children))
   
 total_children <- merge(children_id,household_counts, by="hh_id")
 
-                
+total_children %>%
+      group_by(child, grandchild) %>%
+  summarise(n = n())
+
+total_children %>%
+  group_by(work_reason, money_reason) %>%
+  summarise(n = n())
+
 ```
 
 ```{r combining household head characteristics with children dataset}
 hh_head_2 <- hh_head %>%
-  select(sex, age, literacy, educ, job, tasks, pov_line, extr_pov, hh_id) %>%
-  rename (female_hhhead = sex,
+  select(female, age, literacy, educ, job, tasks, pov, extr, hh_id) %>%
+  rename (female_hhhead = female,
           hhhead_age = age,
           hhhead_literacy = literacy,
           hhhead_educ = educ,
@@ -505,26 +605,9 @@ library(dplyr)
 
 
 ```{r regression variable specifications}
-<<<<<<< HEAD
-total_subset %>%
-  mutate(ln_income = log(income),
-         literate = literacy-1,
-         female = sex-1,
-         no_assist = assist-1,
-         not_registered = register-1)
-#trying to make the assist, register, sex, and literacy variables into 0 1 binary variables, with assist and register = 1, sex = 1 if female, and literacy = 1 if literate. The current coding from the original data is all in 1 2 format, with the opposites. Trying to change it by subtracting doesn't seem to be working.
 
-=======
->>>>>>> f280b9b927bae959861efd5863a0d6e54b157b58
 reg_data <- total_subset %>%
-  mutate(ln_income = log(income),
-         literate = literacy - 1,
-         female = case_when(sex == 2 ~ 1,
-                            sex == 1 ~ 0),
-         no_assist = assist - 1,
-         not_registered = register - 1,
-         year_factor = as.factor(year))
-
+  mutate(year_factor = as.factor(year))
 
 ```
 
@@ -535,15 +618,15 @@ reg_data <- total_subset %>%
 
 #model_simple <- lm(assist ~ floods + droughts + year, data = reg_data)
 #summary(model_simple)
-#model_assist <- lm(assist ~ floods + droughts + age + sex + income + hhhead_educ + female_hhhead + year, data = reg_data)
-#summary(model_assist)
-model_register <- lm(register ~ floods + droughts + age + sex + income + hhhead_educ + female_hhhead + year, data = reg_data)
-summary(model_register)
+model_assist <- lm(assist ~ floods + droughts + age + female + income + child + grandchild + hhhead_educ + female_hhhead + rural + year_factor, data = reg_data)
+summary(model_assist)
+#model_register <- lm(register ~ floods + droughts + age + female + income + child + grandchild + hhhead_educ + female_hhhead + rural + year_factor, data = reg_data)
+#summary(model_register)
 
 ```
 
 ```{r generate regression table, echo = F, results = "asis"}
-stargazer::stargazer(list(model_assist, model_register), 
+stargazer::stargazer(list(model_assist_r, model_register_r), 
                title = "Full sample regression results", 
                label = "fullResults",
                header = F,
@@ -552,18 +635,28 @@ stargazer::stargazer(list(model_assist, model_register),
 
 ```{r regression rural sample}
 
-rural <- subset(reg_data, urb_rur == 2, select = c("hh_id", "id", "age", "sex", "literacy", "dept", "urb_rur", "income", "assist", "register", "floods", "droughts", "year", "job", "tasks", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor"))
+rural <- subset(reg_data, rural == 1, select = c("hh_id", "id", "age", "female", "literacy", "dept", "rural", "income", "assist", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor"))
 
-model_assist_r <- lm(assist ~ floods + droughts + age + sex + income + hhhead_educ + female_hhhead + urb_rur + year, data = reg_data)
+model_assist_r <- (lm(assist ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + year_factor, data = reg_data))
 summary(model_assist_r)
-model_register_r <- lm(register ~ floods + droughts + age + sex + income + hhhead_educ + female_hhhead + urb_rur + year, data = reg_data)
+model_register_r <- lm(register ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + year_factor, data = reg_data)
 summary(model_register_r)
+model_reason <- (lm(work_reason ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + year_factor, data = reg_data))
+summary(model_reason)
 
+                                        
 ```
 
 ```{r regression urban sample}
 
+urban <- subset(reg_data, rural == 0, select = c("hh_id", "id", "age", "female", "literacy", "dept", "rural", "income", "assist", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor"))
+
+model_assist_u <- lm(assist ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + year_factor, data = reg_data)
+summary(model_assist_u)
+model_register_u <- lm(register ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + year_factor, data = reg_data)
+summary(model_register_u)
 ```
+
 
 # Discussion of Data
 
