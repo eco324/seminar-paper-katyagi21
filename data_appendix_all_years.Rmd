@@ -561,6 +561,9 @@ children_id <- mutate(children, id = rownames(children))
   
 total_children <- merge(children_id,household_counts, by="hh_id")
 
+export_summary_table(dfSummary(total_children))
+
+
 total_children %>%
       group_by(child, grandchild) %>%
   summarise(n = n())
@@ -580,6 +583,7 @@ hh_head_2 <- hh_head %>%
           hhhead_educ = educ,
           hhhead_job = job,
           hhhead_tasks = tasks)
+
 total_heads_subset <- hh_head_2 %>% distinct()
 
 #total <- total_children %>%
@@ -609,6 +613,10 @@ library(dplyr)
 reg_data <- total_subset %>%
   mutate(year_factor = as.factor(year))
 
+reg_data %>%
+  group_by(rural) %>%
+  summarise(n = n())
+
 ```
 
 ```{r regressions total sample}
@@ -618,10 +626,12 @@ reg_data <- total_subset %>%
 
 #model_simple <- lm(assist ~ floods + droughts + year, data = reg_data)
 #summary(model_simple)
-model_assist <- lm(assist ~ floods + droughts + age + female + income + child + grandchild + hhhead_educ + female_hhhead + rural + year_factor, data = reg_data)
+model_assist <- lm(assist ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + year_factor, data = reg_data)
 summary(model_assist)
-#model_register <- lm(register ~ floods + droughts + age + female + income + child + grandchild + hhhead_educ + female_hhhead + rural + year_factor, data = reg_data)
-#summary(model_register)
+model_register <- lm(register ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + year_factor, data = reg_data)
+summary(model_register)
+model_reason_t <- (lm(work_reason ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + year_factor, data = reg_data))
+summary(model_reason_t)
 
 ```
 
