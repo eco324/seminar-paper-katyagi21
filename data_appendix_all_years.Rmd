@@ -520,8 +520,8 @@ total_data<- all_years %>%
                   work_reason = case_when(reason == "work" ~ 1,
                                  reason != "work" ~ 0),
          money_reason = case_when(reason == "money" ~ 1, 
-                                  reason != "money" ~ 0),
-         lny = log(income))
+                                  reason != "money" ~ 0))
+
 
 total_data %>%
   group_by(work_reason, money_reason) %>%
@@ -589,9 +589,19 @@ total_heads_subset <- hh_head_2 %>% distinct()
 #total <- total_children %>%
   #left_join(hh_head_2)
 #left join command creating the duplicates problem it seems 
-total <- merge(total_children,hh_head_2, by="hh_id") 
+total <- merge(total_children,total_heads_subset, by="hh_id") 
 
-total_subset <- total %>% distinct()
+#total_2 <- total[!(total$reason == "vacation" & total$assist == 0]
+
+total %>%
+  group_by(reason) %>%
+  summarise(n = n())
+
+total_2 <- subset(total, !(reason == "vacation" & assist == 0)) #taking out the observations with vacation kids
+
+total_subset <- total_2 %>% distinct()
+
+
 
 
 ```
@@ -611,7 +621,8 @@ library(dplyr)
 ```{r regression variable specifications}
 
 reg_data <- total_subset %>%
-  mutate(year_factor = as.factor(year))
+  mutate(year_factor = as.factor(year),
+         lny = log(income))
 
 reg_data %>%
   group_by(rural) %>%
@@ -645,9 +656,15 @@ stargazer::stargazer(list(model_assist_r, model_register_r),
 ```
 ```{r probit regression total sample}
 
-probitMod_assist <- glm(assist ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + year_factor, data = reg_data, family=binomial(link="probit"))  # build the logit model
+probitMod_assist <- glm(assist ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + year_factor, data = reg_data, family=binomial(link="probit"))  
+
+probitMod_register <- glm(register ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + year_factor, data = reg_data, family=binomial(link="probit"))
+
+probitMod_work <- glm(work_reason ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + year_factor, data = reg_data, family=binomial(link="probit"))
 
 summary(probitMod_assist)  # model summary
+summary(probitMod_register)
+summary(probitMod_work)
 ```
 
 ```{r regression rural sample}
