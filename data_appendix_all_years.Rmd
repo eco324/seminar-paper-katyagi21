@@ -1,3 +1,8 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 
 title: "Data Appendix to "The impact of weather events on schooling outcomes""
 author: "Katya Garcia-Israel"
@@ -622,7 +627,8 @@ library(dplyr)
 
 reg_data <- total_subset %>%
   mutate(year_factor = as.factor(year),
-         lny = log(income))
+         income2 = case_when(income == 0 ~ 1), 
+         lny = log(income2))
 
 reg_data %>%
   group_by(rural) %>%
@@ -637,18 +643,18 @@ reg_data %>%
 
 #model_simple <- lm(assist ~ floods + droughts + year, data = reg_data)
 #summary(model_simple)
-#model_assist <- lm(assist ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + year_factor, data = reg_data)
-#summary(model_assist)
-#model_register <- lm(register ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + year_factor, data = reg_data)
-#summary(model_register)
-model_reason_t <- (lm(work_reason ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + year_factor, data = reg_data))
+model_assist <- lm(assist ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + year_factor, data = reg_data)
+summary(model_assist)
+model_register <- lm(register ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + year_factor, data = reg_data)
+summary(model_register)
+model_reason_t <- (lm(work_reason ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + year_factor, data = reg_data))
 summary(model_reason_t)
 
 
 ```
 
 ```{r generate regression table, echo = F, results = "asis"}
-stargazer::stargazer(list(model_assist_r, model_register_r), 
+stargazer::stargazer(list(model_assist, model_register), 
                title = "Full sample regression results", 
                label = "fullResults",
                header = F,
@@ -665,6 +671,15 @@ probitMod_work <- glm(work_reason ~ floods + droughts + age + female + lny + chi
 summary(probitMod_assist)  # model summary
 summary(probitMod_register)
 summary(probitMod_work)
+```
+
+```{r generate probit regression table, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist, probitMod_register, probitMod_work), 
+               title = "Full sample probit regression results", 
+               label = "fullResults",
+               header = F,
+               keep = c("floods", "droughts"))
+
 ```
 
 ```{r regression rural sample}
