@@ -637,6 +637,27 @@ summary(model_reason)
                                         
 ```
 
+```{r generate linear regression table rural sample, echo = F, results = "asis"}
+stargazer::stargazer(list(model_assist, model_register), 
+               title = "Rural sample linear regression results", 
+               label = "fullResults",
+               header = F,
+               keep = c("floods", "droughts"))
+```
+
+```{r probit regression rural sample, echo = F, message = F}
+
+probitMod_assist_r <- glm(assist ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
+
+probitMod_register_r <- glm(register ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+probitMod_work_r <- glm(work_reason ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+summary(probitMod_assist_r)  # model summary
+summary(probitMod_register_r)
+summary(probitMod_work_r)
+```
+
 ```{r linear regression urban sample, echo = F, message = F}
 
 urban <- subset(reg_data, rural == 0, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "income", "assist", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor"))
@@ -645,6 +666,28 @@ model_assist_u <- lm(assist ~ floods + droughts + age + female + income + child 
 summary(model_assist_u)
 model_register_u <- lm(register ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
 summary(model_register_u)
+```
+
+```{r linear regression generate table urban sample, echo = F, results = "asis"}
+stargazer::stargazer(list(model_assist, model_register), 
+               title = "Urban sample linear regression results", 
+               label = "urbanlinearResults",
+               header = F,
+               keep = c("floods", "droughts"))
+
+```
+
+```{r probit regression urban sample, echo = F, message = F}
+
+probitMod_assist_u <- glm(assist ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))  
+
+probitMod_register_u <- glm(register ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+
+probitMod_work_u <- glm(work_reason ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+
+summary(probitMod_assist_r)  # model summary
+summary(probitMod_register_r)
+summary(probitMod_work_r)
 ```
 
 
