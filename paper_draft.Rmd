@@ -1,0 +1,659 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+title: ""The impact of environmental shocks on children's schooling in Bolivia""
+author: "Katya Garcia-Israel"
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+  pdf_document:
+    toc: yes
+    number_sections: yes
+---
+
+```{r setup, echo = F, message = F}
+knitr::opts_chunk$set(results = 'asis', cache = F)
+library(tidyverse)
+library(summarytools)
+st_options(plain.ascii = F,
+           style = "rmarkdown",
+           footnote = NA,
+           subtitle.emphasis = F,
+           dfSummary.silent = T,
+           dfSummary.valid.col = F, 
+           tmp.img.dir = "./tmp",
+           dfSummary.style = "grid")
+
+# add haven package to make stata 16 version readable 
+library(foreign)
+library(haven)
+
+#The following custom function simplifies the process of writing dfSummaries to html files
+export_summary_table <- function(dfSummary_output){
+  data_info <- attr(dfSummary_output, "data_info")
+  ds_name <- data_info$Data.frame
+  print(dfSummary_output,
+      file = str_c("output/", ds_name, "_summary.html"),
+      method = "browser",
+      report.title = ds_name)
+}
+```
+
+```{r set dfSummary css style, echo = F, include = F}
+st_css()
+```
+# Introduction
+
+
+# Literature Review
+
+
+# Data and Methods
+
+## Data
+
+The household data was taken from the social surveys database of the Bolivia National Statistical Institute, using household surveys from the years 2005-2007, 2011-2012.
+Instituto Nacional de Estadistica. (2005). Encuesta de Hogares (2005) [SAV file]. Retrieved from https://www.ine.gob.bo/index.php/banco/base-de-datos-sociales
+
+The unit of observation at the individual level, but each individual is identified mainly by the household id. 
+
+### Variable descriptions
+
+- **hh_id:** The household ID, which is the same for each member of the household. It is made up of letters and numbers. 
+- **nro1:** The number of the person in each household.
+- **assist:** Binary variable, whether or not the individual assists school 
+- **urb_rur:** Binary variable, whether the household is in an urban or rural area
+- **reason:** the reason why the individual is not assisting school if they are not 
+- **members:** number of household members excluding servants 
+- **sex:** the sex of the individual, Male = 1, Female =2 
+- **age:** How old the individual is, in years 
+- **relation:** The relationship of the individual to the head of household 
+- **literacy:** Binary variable, whether a person can read and write 
+- **register:** Binary variable, whether an individual registered for school or not 
+- **grade:** For what grade is the person registered 
+- **repeated:** whether the person has repeated the grade they are currently registered in 
+- **dept:** the department in which the person lives 
+- **income:** the per capita monthly income for each household, in bolivianos
+
+
+```{r import household data 2005, echo = F, message = F}
+data_2005 <- read_dta("Raw data/seminar_paper_data/2005_hhsurvey.dta") %>% 
+  rename(hh_id = folio,
+        assist1 = s3_08,  
+        reason = s3_09, 
+        members = nm_y,
+        sex = s1_02,
+        age = s1_03,
+        relation = s1_05,
+        literacy1 = s3_01,
+        register1 = s3_04,
+        school_level = s3_05a,
+        grade = s3_05b,
+        repeated = s3_07,
+        income = y_perc1A,
+        educ = aoesc,
+        job = s4_16cod,
+        tasks = s4_16b,
+        pov_line = z,
+        extr_pov = z_ext) 
+
+hh_2005 <- data_2005 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2005,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+         reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         assist = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 17 ~ 1,
+                             school_level != 17 ~ 0),
+         secondary = case_when(school_level == 18 ~ 1,
+                               school_level != 18 ~ 0))
+              
+```
+
+
+
+```{r export summary table 2005, echo = F, message = F}
+export_summary_table(dfSummary(hh_2005)) 
+
+```
+
+
+```{r import household data 2006, echo = F, message = F}
+data_2006 <- read_dta("Raw data/seminar_paper_data/2006_hhsurvey.dta")  %>% 
+  rename(hh_id = Folio,
+        assist1 = s4_08,  
+        reason = S4_09, 
+        members = mhogar,
+        sex = s1_02,
+        age = s1_03,
+        relation = s1_05,
+        literacy1 = s4_01,
+        register1 = s4_04,
+        school_level = s4_05a,
+        grade = s4_05b,
+        repeated = s4_07,
+        income = yhogpcf,
+        urb_rur = Urb_Rur,
+        depto = ID01,
+        educ = añoe,
+        job = s5_17cod,
+        tasks = s5_16b,
+        pov_line = z,
+        extr_pov = zext) 
+
+hh_2006 <- data_2006 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2006,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+           reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         assist = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 17 ~ 1,
+                             school_level != 17 ~ 0),
+         secondary = case_when(school_level == 18 ~ 1,
+                               school_level != 18 ~ 0))
+```
+
+```{r exporting data table, echo = F, message = F}
+export_summary_table(dfSummary(hh_2006))
+```
+
+```{r import household data 2007, echo = F, message = F}
+data_2007 <- read_dta("Raw data/seminar_paper_data/2007_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist1 = s4_10,  
+        reason = s4_11, 
+        members = mhogar,
+        sex = s1_03,
+        age = s1_04,
+        relation = s1_06,
+        literacy1 = s4_01,
+        register1 = s4_06,
+        school_level = s4_07a,
+        grade = s4_07b,
+        repeated = s4_09,
+        income = yhogpcf,
+        voucher = s4_05,
+        educ = a_oe,
+        job = s5_16co,
+        tasks = s5_16b,
+        pov_line = z,
+        extr_pov = zext) 
+
+hh_2007 <- data_2007 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2007,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+           reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         assist = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 17 ~ 1,
+                             school_level != 17 ~ 0),
+         secondary = case_when(school_level == 18 ~ 1,
+                               school_level != 18 ~ 0))
+```
+
+```{r import household data 2011, echo = F, message = F}
+data_2011 <- read_dta("Raw data/seminar_paper_data/2011_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist1 = s4_12,  
+        reason = s4_13,
+        sex = s1_03,
+        age = s1_04,
+        relation = s1_08,
+        literacy1 = s4_01,
+        register1 = s4_05,
+        grade = s4_06b,
+        repeated = s4_11a,
+        income = yhogpc,
+        school_level = s4_06a,
+        urb_rur = area,
+        breakfast = s4_07,
+        voucher = s4_08,
+        voucher_spent = s4_09,
+        educ = e,
+        job = cod_16a,
+        tasks = s5_16b,
+        pov_line = z,
+        extr_pov = zext) 
+
+hh_2011 <- data_2011 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2011,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+           reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                               literacy1 == 2 ~ 0), 
+          female = case_when(sex == 2 ~ 1,
+                             sex == 1 ~ 0),
+           rural = case_when(urb_rur == 1 ~ 0,
+                             urb_rur == 2 ~ 1), 
+           assist = case_when(assist1 == 1 ~ 1,
+                              assist1 == 2 ~ 0),
+           register = case_when(register1 == 1 ~ 1,
+                                register1 == 2 ~ 0),
+         primary = case_when(school_level == 16 ~ 1,
+                             school_level != 16 ~ 0),
+         secondary = case_when(school_level == 17 ~ 1,
+                               school_level != 17 ~ 0))
+```
+
+```{r household data 2012, echo = F, message = F}
+data_2012 <- read_dta("Raw data/seminar_paper_data/2012_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist1 = s4_12,  
+        reason = s4_13,
+        sex = s1_03,
+        age = s1_04,
+        relation = s1_08,
+        literacy1 = s4_01,
+        register1 = s4_04,
+        grade = s4_05b,
+        repeated = s4_11a,
+        income = yhogpc,
+        school_level = s4_05a,
+        urb_rur = area,
+        depto = departamento,
+        breakfast = s4_07,
+        voucher = s4_08,
+        voucher_spent = s4_09,
+        educ = e,
+        job = cods5_16a,
+        tasks = s5_16b,
+        pov_line = z,
+        extr_pov = zext) 
+
+hh_2012 <- data_2012 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2012,
+         dept = case_when(depto== "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+           reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+         literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         assist = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 19 ~ 1,
+                             school_level != 19 ~ 0),
+         secondary = case_when(school_level == 20 ~ 1,
+                               school_level != 20 ~ 0))
+
+```
+
+```{r combine household datasets, echo = F, message = F}
+all_years <- hh_2005 %>% 
+  rbind(hh_2005, hh_2006, hh_2007, hh_2011, hh_2012) 
+ 
+
+```
+
+
+The flood data is from the years 2005-2012. The unit of observation is municipality, but the data is later combined to make the unit of observation at the department level to make it comparable with the household survey data.
+
+This data can be found at the following website: http://geosinager.defensacivil.gob.bo/maps/226. It is associated with a map showing the flood occurrences information spatially, and to get the data in a non-spatial format, the flood layer should be downloaded. It may be downloaded in a variety of different formats, including csv.
+
+```{r import flood data, echo = F, message = F}
+flood <- read_csv(file.path("Raw data", "recurrencia_inundacion2002_2012bol.csv")) %>% 
+  rename(dept = NOM_DEP)
+
+flood_summary <- flood %>% 
+  group_by(dept) %>% 
+  summarize_at(vars(starts_with("A_")), sum) %>% 
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "floods") %>%
+  mutate(year = as.numeric(year))
+
+export_summary_table(dfSummary(flood_summary))
+```
+The drought data also spans the years 2005-2012 and shows the frequency of droughts in each municipality by year.
+
+This data can be obtained from http://geosinager.defensacivil.gob.bo/maps/225. It is shown on a map with different layers, and the raw data may be downloaded in a variety of different forms, including csv. 
+
+```{r importing droughts data, echo = F, message = F}
+#drought data set 
+library(readxl)
+drought <- read_excel(file.path("Raw data", "recurrenciasequia_2002_2012bol (1).xls")) %>% 
+#rename variables
+    rename(dept = NOM_DEP)
+
+drought_summary <- drought %>%
+  group_by(dept) %>% 
+  summarize_at(vars(starts_with("A_")), sum) %>%
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "droughts") %>%
+  mutate(year = as.numeric(year))
+
+export_summary_table(dfSummary(drought_summary))
+
+```
+
+# Data Processing and Combination
+
+To create a complete dataset, I merged the household data with the floods data and the droughts data. Before merging the data, I cut down the datasets to include only the relevant variables needed for analysis in each file. I renamed several variables in the household survey data set to make them more understandable. I also created the year variable for the household data to ensure that it matched up correctly with the weather data. For the flood and drought data, I grouped the occurrences by department instead of by municipality so they would match the household data, and I made the department character numeric for the merge. 
+
+
+``` {r merging datasets, echo = F, message = F}
+total_data<- all_years %>% 
+  left_join(flood_summary) %>%
+  left_join(drought_summary) %>%
+  mutate(child = case_when(relation == 3 ~ 1,
+                           relation != 3 ~ 0),
+         grandchild = case_when(relation == 8 ~ 1,
+                                relation != 8 ~ 0),
+         pov_diff = income - pov_line,
+         pov = case_when(pov_diff > 0 ~ 0,
+                         pov_diff < 0 ~ 1),
+         extr_diff = income - extr_pov,
+         extr = case_when (extr_diff > 0 ~ 0,
+                           extr_diff < 0 ~ 1),
+                  work_reason = case_when(reason == "work" ~ 1,
+                                 reason != "work" ~ 0),
+         money_reason = case_when(reason == "money" ~ 1, 
+                                  reason != "money" ~ 0))
+
+
+total_data %>%
+  group_by(work_reason, money_reason) %>%
+  summarise(n = n())
+
+export_summary_table(dfSummary(total_data))
+
+
+save("total_data", file = "processed_data/analysis_data.RData")
+
+```
+
+## Analysis Variables
+
+The variables used in the final analysis are the variables from the flood and drought summaries, showing the number of occurrences in each department per year. The other variables used are from the household data, showing demographic information as well as the dependent variables related to school assistance and registration. The variables "assist" and "register" tell whether the child is currently registered and attending school, and the variables "grade" and "literacy" give further educational information showing what grade the child is in and whether they can read and write. The variables "urb_rur" and "dept" give geographic information, indicating whether the child's household is located in an urban area or a rural area and in what department of the country they are living. Demographic variables such as age, sex, relation to the head of household, number of household members, and income can be used in the analysis as controls.
+
+
+
+```{r creating head of household subset, echo = F, message = F}
+
+hh_head <- subset(total_data, relation == 1, select = c("hh_id", "female", "age", "literacy", "dept", "rural", "income", "year", "educ", "job", "tasks", "pov_diff", "extr_diff", "pov", "extr"))
+
+```
+
+
+```{r creating children subset, echo = F, message = F}
+
+children <- subset(total_data, age < 18 & age > 4, select = c("hh_id", "age", "female", "child", "grandchild", "literacy", "dept", "rural", "income", "assist", "reason", "register", "primary", "secondary", "floods", "droughts", "year", "job", "tasks", "money_reason", "work_reason"))
+
+household_counts <- children %>%
+group_by(hh_id) %>%
+summarize(num_children = n())
+
+
+children_id <- mutate(children, id = rownames(children))
+  
+total_children <- merge(children_id,household_counts, by="hh_id")
+
+export_summary_table(dfSummary(total_children))
+
+
+total_children %>%
+      group_by(child, grandchild) %>%
+  summarise(n = n())
+
+total_children %>%
+  group_by(work_reason, money_reason) %>%
+  summarise(n = n())
+
+```
+
+```{r combining household head characteristics with children dataset, echo = F, message = F}
+hh_head_2 <- hh_head %>%
+  select(female, age, literacy, educ, job, tasks, pov, extr, hh_id) %>%
+  rename (female_hhhead = female,
+          hhhead_age = age,
+          hhhead_literacy = literacy,
+          hhhead_educ = educ,
+          hhhead_job = job,
+          hhhead_tasks = tasks)
+
+total_heads_subset <- hh_head_2 %>% distinct()
+
+#total <- total_children %>%
+  #left_join(hh_head_2)
+#left join command creating the duplicates problem it seems 
+total <- merge(total_children,total_heads_subset, by="hh_id") 
+
+#total_2 <- total[!(total$reason == "vacation" & total$assist == 0]
+
+total %>%
+  group_by(reason) %>%
+  summarise(n = n())
+
+total_2 <- subset(total, !(reason == "vacation" & assist == 0)) #taking out the observations with vacation kids
+
+total_subset <- total_2 %>% distinct()
+
+
+
+
+```
+```{r summary statistic tables with total_subset data, echo = F, message = F}
+#creating a table with the main explanatory variables
+
+#creating a table dividing the characteristics by urban/rural area
+```
+#Empirical Model
+
+
+```{r regression variable specifications, echo = F, message = F}
+
+reg_data <- total_subset %>%
+  mutate(year_factor = as.factor(year),
+         dept_factor = as.factor(dept),
+         income2 = case_when(income == 0 ~ 1), 
+         lny = log(income2))
+
+reg_data %>%
+  group_by(rural) %>%
+  summarise(n = n())
+
+```
+
+```{r linear regressions total sample, echo = F, message = F}
+
+#example code:
+#model_levels <- lm(recreation_visits ~ svr_median + svr_p10 + month_code*unit_code, data = regression_data)
+
+#model_simple <- lm(assist ~ floods + droughts + year, data = reg_data)
+#summary(model_simple)
+model_assist <- lm(assist ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + dept_factor + year_factor, data = reg_data)
+summary(model_assist)
+model_register <- lm(register ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + dept_factor + year_factor, data = reg_data)
+summary(model_register)
+model_reason_t <- (lm(work_reason ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data))
+summary(model_reason_t)
+
+
+```
+
+```{r generate regression table, echo = F, results = "asis"}
+stargazer::stargazer(list(model_assist, model_register), 
+               title = "Full sample regression results", 
+               label = "fullResults",
+               header = F,
+               keep = c("floods", "droughts"))
+```
+```{r probit regression total sample, echo = F, message = F}
+
+probitMod_assist <- glm(assist ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
+
+probitMod_register <- glm(register ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+
+probitMod_work <- glm(work_reason ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+
+summary(probitMod_assist)  # model summary
+summary(probitMod_register)
+summary(probitMod_work)
+```
+
+```{r generate probit regression table, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist, probitMod_register, probitMod_work), 
+               title = "Full sample probit regression results", 
+               label = "fullResults",
+               header = F,
+               keep = c("floods", "droughts"))
+
+```
+
+```{r regression rural sample, echo = F, message = F}
+
+rural <- subset(reg_data, rural == 1, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "income", "assist", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor", "work_reason"))
+
+model_assist_r <- (lm(assist ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural))
+summary(model_assist_r)
+model_register_r <- lm(register ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural)
+summary(model_register_r)
+model_reason <- (lm(work_reason ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural))
+summary(model_reason)
+
+                                        
+```
+
+```{r linear regression urban sample, echo = F, message = F}
+
+urban <- subset(reg_data, rural == 0, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "income", "assist", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor"))
+
+model_assist_u <- lm(assist ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
+summary(model_assist_u)
+model_register_u <- lm(register ~ floods + droughts + age + female + income + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
+summary(model_register_u)
+```
+
+
+# Discussion of Data
+
+The "assist" variable shows that around 60% of people who are registered for school currently assist, while 40% do not assist. The "reason" variable shows that two most common reasons for missing school are for work (31.3%) or vacation (20.5). Out of the people who are registered for school, 6.6% are repeating the grade they are currently in. 
+
+The patterns for households show that the average household has 5.3 members, and the average per capita monthly income per household is 258 bolivianos. Over half of the households in the sample are located in urban areas (56.3), while under half are located in rural areas (43.7). La Paz, Santa Cruz, and Cochabamba are the three departments with the most households in this sample, which corresponds to their overall population distribution.
+
+The patterns in the weather data show that every department experienced multiple floods in 2005, while many but not all experienced droughts. The place that experienced the highest number of flood occurrences overall was Cochabamba, while Beni experienced 13 droughts in 2005. 
+
+
