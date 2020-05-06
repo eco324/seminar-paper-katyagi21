@@ -561,6 +561,7 @@ total_subset <- total_2 %>% distinct()
 #creating a table dividing the characteristics by urban/rural area
 ```
 #Empirical Model
+see the link for math equation help.
 
 
 ```{r regression variable specifications, echo = F, message = F}
@@ -568,11 +569,14 @@ total_subset <- total_2 %>% distinct()
 reg_data <- total_subset %>%
   mutate(year_factor = as.factor(year),
          dept_factor = as.factor(dept),
-         income2 = case_when(income == 0.0000 ~ 1.0000), 
-         lny = log(income2))
+         lny = log(income + 1),
+         valley = case_when(dept == "Chuquisaca", "Cochabamba", "Tarija" ~ 1,
+                            dept != "Chuquisaca", "Cochabamba", "Tarija" ~ 0))
+
+#adding the region variables for the region fixed-effects option
 
 reg_data %>%
-  group_by(rural) %>%
+  group_by(dept_factor) %>%
   summarise(n = n())
 
 ```
