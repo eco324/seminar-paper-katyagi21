@@ -555,8 +555,27 @@ total_subset <- total_2 %>% distinct()
 
 
 ```
-```{r summary statistic tables with total_subset data, echo = F, message = F}
+
+```{r summary stats example}
+install.packages("stargazer")
+library(stargazer)
+
+stargazer(total_subset)
+
+```
+
+
+```{r create summary statistic table, echo = F, results = 'asis'}
 #creating a table with the main explanatory variables
+
+load("processed-data/analysis_data.RData")
+
+stargazer::stargazer(as.data.frame(stat_data),
+                     label = "summaryStats",
+                     title = "Summary statistics",
+                     header = F,
+                     type = "latex",
+                     digits = 0)
 
 #creating a table dividing the characteristics by urban/rural area
 ```
@@ -580,6 +599,25 @@ reg_data %>%
   summarise(n = n())
 
 ```
+\begin{table}
+\centering
+\caption{Variable definitions}
+\label{variableDefinitions}
+\begin{tabular}{ll}
+\hline
+\hline
+Variable name      & Description                                   \\
+\hline
+svr\_mean          & Monthly mean of SVR at a park                 \\
+svr\_median        & Monthly median of SVR at a park               \\
+svr\_p10           & Monthly 10th percentile of SVR at a park      \\
+svr\_p25           & Monthly 25th percentile of SVR at a park      \\
+svr\_p75           & Monthly 75th percentile of SVR at a park      \\
+svr\_p90           & Monthly 90th percentile of SVR at a park      \\
+recreation\_visits & Monthly number of recreation visits at a park \\
+\hline
+\end{tabular}
+\end{table}
 
 ```{r linear regressions total sample, echo = F, message = F}
 
