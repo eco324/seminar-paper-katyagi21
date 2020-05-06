@@ -589,8 +589,10 @@ reg_data <- total_subset %>%
   mutate(year_factor = as.factor(year),
          dept_factor = as.factor(dept),
          lny = log(income + 1),
-         valley = case_when(dept == "Chuquisaca", "Cochabamba", "Tarija" ~ 1,
-                            dept != "Chuquisaca", "Cochabamba", "Tarija" ~ 0))
+         valley = case_when(dept %in% c("Chuquisaca", "Cochahamba", "Tarija") ~ 1, TRUE ~ 0),
+         mountain = case_when(dept %in% c("La Paz", "Oruro", "Potosi") ~ 1, TRUE ~ 0),
+         plains = case_when(dept %in% c("Beni", "Pando", "Santa Cruz") ~ 1, TRUE ~ 0),
+         lagged_flood = 
 
 #adding the region variables for the region fixed-effects option
 
@@ -606,15 +608,27 @@ reg_data %>%
 \begin{tabular}{ll}
 \hline
 \hline
-Variable name      & Description                                   \\
+Variable name      & Description                                               \\
 \hline
-svr\_mean          & Monthly mean of SVR at a park                 \\
-svr\_median        & Monthly median of SVR at a park               \\
-svr\_p10           & Monthly 10th percentile of SVR at a park      \\
-svr\_p25           & Monthly 25th percentile of SVR at a park      \\
-svr\_p75           & Monthly 75th percentile of SVR at a park      \\
-svr\_p90           & Monthly 90th percentile of SVR at a park      \\
-recreation\_visits & Monthly number of recreation visits at a park \\
+Attend          & Binary variable, 1 = attends school                          \\
+Register        & Binary variable, 1 = registered for school                   \\
+Work_reason     & Binary variable, 1 = does not attend school for work reasons \\
+Lny             & Log of income per capita (in Bolivianos/month)
+Female          & Binary variable, 1 = female      \\
+Age             & Age in years       \\
+Child           & 
+Grandchild
+Num_children
+Secondary
+hhhead_educ
+female_hhhead
+Floods          & Number of flood occurrences per dept per year      \\
+Droughts        & Number of drought occurrences per dept per year \\
+Dept
+Valleys
+Mountains
+Plains
+
 \hline
 \end{tabular}
 \end{table}
