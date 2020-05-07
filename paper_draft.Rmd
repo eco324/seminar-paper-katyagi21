@@ -447,14 +447,14 @@ drought_total <- drought_summary %>%
   left_join(drought_lag)
   
 
-export_summary_table(dfSummary(drought_summary))
+export_summary_table(dfSummary(drought_total))
 
 ```
 
 ``` {r merging datasets, echo = F, message = F}
 total_data<- all_years %>% 
-  left_join(flood_summary) %>%
-  left_join(drought_summary) %>%
+  left_join(flood_total) %>%
+  left_join(drought_total) %>%
   mutate(child = case_when(relation == 3 ~ 1,
                            relation != 3 ~ 0),
          grandchild = case_when(relation == 8 ~ 1,
@@ -575,7 +575,7 @@ rural <- subset(reg_data, rural == 1, select = c("hh_id", "id", "age", "female",
 
 reg_data %>%
   group_by(dept_factor) %>%
-  #summarise(n = n())
+  summarise(n = n())
 
 ```
 ##Variable Descriptions
@@ -616,28 +616,31 @@ Plains          & Binary variable, 1 = department is in plains region          \
 ```{r create summary statistic table, echo = F, results = 'asis'}
 #creating a table with the main explanatory variables
 
-summary_data <- reg_data %>%
+summary_total <- reg_data %>%
   select(attend, register, work_reason, lny, extr, female, age, child, grandchild, num_children, secondary, hhhead_educ, female_hhhead, floods, droughts, dept, valleys, plains, mountains)%>%
-  summarise_all(list(mean = mean, sd = sd))
+    summarise_all(list(mean = mean, sd = sd))
 
-stargazer::stargazer(as.data.frame(summary_data),
+
+stargazer::stargazer(as.data.frame(summary_total), 
+                     summary = T,
                      label = "summaryStats",
                      title = "Summary statistics (full sample)",
                      header = F,
                      type = "latex",
-                     digits = 0)
+                     digits = 3)
 
 #creating a table dividing the characteristics by urban/rural area
 summary_rural <- rural %>%
   select(attend, register, work_reason, lny, extr, female, age, child, grandchild, num_children, secondary, hhhead_educ, female_hhhead, floods, droughts, dept, valleys, plains, mountains) %>%
-  summarise_all(list(mean = mean, sd = sd))
+    summarise_all(list(mean = mean, sd = sd))
   
-stargazer::stargazer(as.data.frame(summary_data),
+stargazer::stargazer(as.data.frame(summary_rural),
                      label = "summaryStatsR",
                      title = "Summary statistics (rural sample)",
+                     summary = T,
                      header = F,
                      type = "latex",
-                     digits = 0)
+                     digits = 3)
 
 ```
 
@@ -653,39 +656,15 @@ see the link for math equation help.
 
 
 
-
-```{r linear regressions total sample, echo = F, message = F}
-
-#example code:
-#model_levels <- lm(recreation_visits ~ svr_median + svr_p10 + month_code*unit_code, data = regression_data)
-
-#model_simple <- lm(assist ~ floods + droughts + year, data = reg_data)
-#summary(model_simple)
-model_assist <- lm(attend ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + dept_factor + year_factor, data = reg_data)
-summary(model_assist)
-model_register <- lm(register ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + dept_factor + year_factor, data = reg_data)
-summary(model_register)
-model_reason_t <- (lm(work_reason ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data))
-summary(model_reason_t)
-
-
-```
-
-```{r generate regression table, echo = F, results = "asis"}
-stargazer::stargazer(list(model_assist, model_register), 
-               title = "Full sample regression results", 
-               label = "fullResults",
-               header = F,
-               keep = c("floods", "droughts"))
-```
+#Results
 
 ```{r probit regression total sample, echo = F, message = F}
 
-probitMod_assist <- glm(attend ~ floods + droughts + age + female + lny + primary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
+probitMod_assist <- glm(attend ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
 
-probitMod_register <- glm(register ~ floods + droughts + age + female + lny + primary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+probitMod_register <- glm(register ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + primary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
 
-probitMod_work <- glm(work_reason ~ floods + droughts + age + female + lny + primary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+probitMod_work <- glm(work_reason ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + primary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
 
 summary(probitMod_assist)  # model summary
 summary(probitMod_register)
@@ -701,13 +680,40 @@ stargazer::stargazer(list(probitMod_assist, probitMod_register, probitMod_work),
 
 ```
 
+```{r linear regressions total sample, echo = F, message = F}
+
+#example code:
+#model_levels <- lm(recreation_visits ~ svr_median + svr_p10 + month_code*unit_code, data = regression_data)
+
+#model_simple <- lm(assist ~ floods + droughts + year, data = reg_data)
+#summary(model_simple)
+model_assist <- lm(attend ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + dept_factor + year_factor, data = reg_data)
+summary(model_assist)
+model_register <- lm(register ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + rural + dept_factor + year_factor, data = reg_data)
+summary(model_register)
+model_reason_t <- (lm(work_reason ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data))
+summary(model_reason_t)
+
+
+```
+
+```{r generate regression table, echo = F, results = "asis"}
+stargazer::stargazer(list(model_assist, model_register), 
+               title = "Full sample linear regression results", 
+               label = "fullResults",
+               header = F,
+               keep = c("floods", "droughts"))
+```
+
+
+
 ```{r regression rural sample, echo = F, message = F}
 
-model_assist_r <- (lm(attend ~ floods + droughts + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural))
+model_assist_r <- (lm(attend ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural))
 summary(model_assist_r)
-model_register_r <- lm(register ~ floods + droughts + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural)
+model_register_r <- lm(register ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural)
 summary(model_register_r)
-model_reason <- (lm(work_reason ~ floods + droughts + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural))
+model_reason <- (lm(work_reason ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural))
 summary(model_reason)
 
                                         
@@ -723,11 +729,11 @@ stargazer::stargazer(list(model_assist, model_register),
 
 ```{r probit regression rural sample, echo = F, message = F}
 
-probitMod_assist_r <- glm(attend ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
+probitMod_assist_r <- glm(attend ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
 
-probitMod_register_r <- glm(register ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+probitMod_register_r <- glm(register ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
 
-probitMod_work_r <- glm(work_reason ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+probitMod_work_r <- glm(work_reason ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
 
 summary(probitMod_assist_r)  # model summary
 summary(probitMod_register_r)
@@ -736,11 +742,11 @@ summary(probitMod_work_r)
 
 ```{r linear regression urban sample, echo = F, message = F}
 
-urban <- subset(reg_data, rural == 0, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "lny", "attend", "register", "work_reason", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor", "extr", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov"))
+urban <- subset(reg_data, rural == 0, select = c("hh_id", "id", "age", "female", "literacy", "secondary", "dept_factor", "rural", "lny", "attend", "register", "work_reason", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor", "extr", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov"))
 
-model_assist_u <- lm(attend ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
+model_assist_u <- lm(attend ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
 summary(model_assist_u)
-model_register_u <- lm(register ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
+model_register_u <- lm(register ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
 summary(model_register_u)
 ```
 
@@ -755,11 +761,11 @@ stargazer::stargazer(list(model_assist, model_register),
 
 ```{r probit regression urban sample, echo = F, message = F}
 
-probitMod_assist_u <- glm(attend ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))  
+probitMod_assist_u <- glm(attend ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))  
 
-probitMod_register_u <- glm(register ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+probitMod_register_u <- glm(register ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
 
-probitMod_work_u <- glm(work_reason ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+probitMod_work_u <- glm(work_reason ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
 
 summary(probitMod_assist_r)  # model summary
 summary(probitMod_register_r)
