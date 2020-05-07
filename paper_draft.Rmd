@@ -603,8 +603,10 @@ Secondary       & Binary variable, 1 = in secondary school group               \
 hhhead educ     & Years of education of head of household                      \\
 female hhhead   & Binary variable, 1 = female head of household                \\
 Floods          & Number of flood occurrences per dept per year                \\
-Droughts        & Number of drought occurrences per dept per year              \\
-Dept            & Department                                                   \\
+Droughts        & Number of drought occurrences per dept in current year       \\
+Lag floods      & Number of flood occurrences per dept in the previous year    \\
+Lag droughts    & Number of drought occurrences per dept in the previous year  \\
+Dept            & Department (nine options)                                    \\
 Valleys         & Binary variable, 1 = department is in valleys region         \\
 Mountains       & Binary variable, 1 = department is in mountains region       \\
 Plains          & Binary variable, 1 = department is in plains region          \\
@@ -616,12 +618,11 @@ Plains          & Binary variable, 1 = department is in plains region          \
 ```{r create summary statistic table, echo = F, results = 'asis'}
 #creating a table with the main explanatory variables
 
-summary_total <- reg_data %>%
-  select(attend, register, work_reason, lny, extr, female, age, child, grandchild, num_children, secondary, hhhead_educ, female_hhhead, floods, droughts, dept, valleys, plains, mountains)%>%
-    summarise_all(list(mean = mean, sd = sd))
+table_total <- reg_data %>%
+  select(attend, register, work_reason, lny, extr, female, age, child, grandchild, num_children, secondary, hhhead_educ, female_hhhead, floods, droughts, dept, valleys, plains, mountains)
+ 
 
-
-stargazer::stargazer(as.data.frame(summary_total), 
+stargazer::stargazer(as.data.frame(table_total), 
                      summary = T,
                      label = "summaryStats",
                      title = "Summary statistics (full sample)",
@@ -630,11 +631,10 @@ stargazer::stargazer(as.data.frame(summary_total),
                      digits = 3)
 
 #creating a table dividing the characteristics by urban/rural area
-summary_rural <- rural %>%
-  select(attend, register, work_reason, lny, extr, female, age, child, grandchild, num_children, secondary, hhhead_educ, female_hhhead, floods, droughts, dept, valleys, plains, mountains) %>%
-    summarise_all(list(mean = mean, sd = sd))
+table_rural <- rural %>%
+  select(attend, register, work_reason, lny, extr, female, age, child, grandchild, num_children, secondary, hhhead_educ, female_hhhead, floods, droughts, dept, valleys, plains, mountains) 
   
-stargazer::stargazer(as.data.frame(summary_rural),
+stargazer::stargazer(as.data.frame(table_rural),
                      label = "summaryStatsR",
                      title = "Summary statistics (rural sample)",
                      summary = T,
