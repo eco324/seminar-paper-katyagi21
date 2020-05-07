@@ -843,9 +843,64 @@ stargazer::stargazer(list(probitMod_assist_ux, probitMod_register_ux, probitMod_
 
 ```
 
+The following results show the region fixed-effects instead of department fixed-effects.
 
+```{r probit regression total sample region, echo = F, message = F}
 
+probitMod_assist_g <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = reg_data, family=binomial(link="probit"))  
 
+probitMod_register_g <- glm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = reg_data, family=binomial(link="probit"))
+
+probitMod_work_g <- glm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = reg_data, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table region, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_g, probitMod_register_g, probitMod_work_g), 
+               title = "Full sample probit regression results", 
+               label = "fullResults13",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead", "mountains", "plains"))
+
+```
+
+```{r probit regression rural sample region, echo = F, message = F}
+
+probitMod_assist_rg <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = rural, family=binomial(link="probit"))  
+
+probitMod_register_rg <- glm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = rural, family=binomial(link="probit"))
+
+probitMod_work_rg <- glm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = rural, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table rural sample region, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_rg, probitMod_register_rg, probitMod_work_rg), 
+               title = "Rural sample probit regression results", 
+               label = "fullResults14",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead", "mountains", "plains"))
+
+```
+
+```{r probit regression urban sample region, echo = F, message = F}
+
+probitMod_assist_ug <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = urban, family=binomial(link="probit"))  
+
+probitMod_register_ug <- glm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = urban, family=binomial(link="probit"))
+
+probitMod_work_ug <- glm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = urban, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table urban sample region, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_ug, probitMod_register_ug, probitMod_work_ug), 
+               title = "Urban sample probit regression results", 
+               label = "fullResults15",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead", "mountains", "plains"))
+
+```
 
 
 The following results show the linear regression models.
