@@ -417,8 +417,6 @@ flood_lag <- read_csv(file.path("Raw data", "lagflood.csv"))
 flood_total <- flood_summary %>% 
   left_join(flood_lag)
   
-export_summary_table(dfSummary(flood_total))
-
 ```
 The drought data also spans the years 2005-2012 and shows the frequency of droughts in each municipality by year.
 
@@ -566,7 +564,7 @@ reg_data <- total_subset %>%
          flood_pov = floods * extr,
          drought_pov = droughts * extr,
          flood_lny = floods * lny,
-         drought_lny = floods * lny,
+         drought_lny = droughts * lny,
          lag_flood_lny = lag_floods * lny,
          lag_drought_lny = lag_droughts * lny,
          lag_f_secondary = lag_floods * secondary,
@@ -577,7 +575,7 @@ reg_data <- total_subset %>%
 #adding lagged flood and drought variables 
 
 #creating rural sample
-rural <- subset(reg_data, rural == 1, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "lny", "attend", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor", "work_reason", "secondary", "valleys", "mountains", "plains", "dept", "extr", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov", "flood_lny", "drought_lny", "lag_flood_lny", "lag_drought_lny", "lag_f_secondary", "lag_d_secondary"))
+rural <- subset(reg_data, rural == 1, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "lny", "attend", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor", "work_reason", "secondary", "valleys", "mountains", "plains", "dept", "extr", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov", "flood_lny", "drought_lny", "lag_flood_lny", "lag_drought_lny", "lag_f_secondary", "lag_d_secondary", "lag_floods", "lag_droughts"))
 
 reg_data %>%
   group_by(dept_factor) %>%
@@ -704,7 +702,7 @@ stargazer::stargazer(list(probitMod_assist_r, probitMod_register_r, probitMod_wo
 
 ```{r probit regression urban sample, echo = F, message = F}
 
-urban <- subset(reg_data, rural == 0, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "lny", "attend", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor", "work_reason", "secondary", "valleys", "mountains", "plains", "dept", "extr", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov", "flood_lny", "drought_lny", "lag_flood_lny", "lag_drought_lny", "lag_f_secondary", "lag_d_secondary"))
+urban <- subset(reg_data, rural == 0, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "lny", "attend", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor", "work_reason", "secondary", "valleys", "mountains", "plains", "dept", "extr", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov", "flood_lny", "drought_lny", "lag_flood_lny", "lag_drought_lny", "lag_f_secondary", "lag_d_secondary", "lag_floods", "lag_droughts"))
 
 probitMod_assist_u <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))  
 
@@ -857,7 +855,7 @@ probitMod_work_g <- glm(work_reason ~ floods + flood_secondary + flood_lny + dro
 
 ```{r generate probit regression table region, echo = F, results = "asis"}
 stargazer::stargazer(list(probitMod_assist_g, probitMod_register_g, probitMod_work_g), 
-               title = "Full sample probit regression results", 
+               title = "Full sample probit regression results (region fixed-effects)", 
                label = "fullResults13",
                header = F,
                keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead", "mountains", "plains"))
@@ -876,7 +874,7 @@ probitMod_work_rg <- glm(work_reason ~ floods + flood_secondary + flood_lny + dr
 
 ```{r generate probit regression table rural sample region, echo = F, results = "asis"}
 stargazer::stargazer(list(probitMod_assist_rg, probitMod_register_rg, probitMod_work_rg), 
-               title = "Rural sample probit regression results", 
+               title = "Rural sample probit regression results (region fixed-effects)", 
                label = "fullResults14",
                header = F,
                keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead", "mountains", "plains"))
@@ -895,7 +893,7 @@ probitMod_work_ug <- glm(work_reason ~ floods + flood_secondary + flood_lny + dr
 
 ```{r generate probit regression table urban sample region, echo = F, results = "asis"}
 stargazer::stargazer(list(probitMod_assist_ug, probitMod_register_ug, probitMod_work_ug), 
-               title = "Urban sample probit regression results", 
+               title = "Urban sample probit regression results (region fixed-effects)", 
                label = "fullResults15",
                header = F,
                keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead", "mountains", "plains"))
@@ -928,11 +926,11 @@ stargazer::stargazer(list(model_assist_t, model_register_t, model_reason_t),
 ```{r regression rural sample, echo = F, message = F}
 
 model_assist_r <- (lm(attend ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural))
-summary(model_assist_r)
+
 model_register_r <- lm(register ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural)
-summary(model_register_r)
+
 model_reason_r <- (lm(work_reason ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural))
-summary(model_reason)
+
 
                                         
 ```
@@ -965,14 +963,8 @@ stargazer::stargazer(list(model_assist_u, model_register_u, model_reason_u),
 
 ```
 
-
-
 # Discussion of Data
-
-The "assist" variable shows that around 60% of people who are registered for school currently assist, while 40% do not assist. The "reason" variable shows that two most common reasons for missing school are for work (31.3%) or vacation (20.5). Out of the people who are registered for school, 6.6% are repeating the grade they are currently in. 
 
 The patterns for households show that the average household has 5.3 members, and the average per capita monthly income per household is 258 bolivianos. Over half of the households in the sample are located in urban areas (56.3), while under half are located in rural areas (43.7). La Paz, Santa Cruz, and Cochabamba are the three departments with the most households in this sample, which corresponds to their overall population distribution.
 
 The patterns in the weather data show that every department experienced multiple floods in 2005, while many but not all experienced droughts. The place that experienced the highest number of flood occurrences overall was Cochabamba, while Beni experienced 13 droughts in 2005. 
-
-
