@@ -1,0 +1,923 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+title: ""The impact of environmental shocks on children's schooling in Bolivia""
+author: "Katya Garcia-Israel"
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+  pdf_document:
+    toc: yes
+    number_sections: yes
+---
+
+```{r setup, echo = F, message = F}
+knitr::opts_chunk$set(results = 'asis', cache = F)
+library(tidyverse)
+library(summarytools)
+st_options(plain.ascii = F,
+           style = "rmarkdown",
+           footnote = NA,
+           subtitle.emphasis = F,
+           dfSummary.silent = T,
+           dfSummary.valid.col = F, 
+           tmp.img.dir = "./tmp",
+           dfSummary.style = "grid")
+
+# add haven package to make stata 16 version readable 
+library(foreign)
+library(haven)
+
+#The following custom function simplifies the process of writing dfSummaries to html files
+export_summary_table <- function(dfSummary_output){
+  data_info <- attr(dfSummary_output, "data_info")
+  ds_name <- data_info$Data.frame
+  print(dfSummary_output,
+      file = str_c("output/", ds_name, "_summary.html"),
+      method = "browser",
+      report.title = ds_name)
+}
+```
+
+```{r set dfSummary css style, echo = F, include = F}
+st_css()
+```
+# Introduction
+
+
+# Literature Review
+
+
+# Data and Methods
+
+## Data
+
+The household data was taken from the social surveys database of the Bolivia National Statistical Institute, using household surveys from the years 2005-2007, 2011-2012.
+Instituto Nacional de Estadistica. (2005). Encuesta de Hogares (2005) [SAV file]. Retrieved from https://www.ine.gob.bo/index.php/banco/base-de-datos-sociales
+
+The unit of observation at the individual level, but each individual is identified mainly by the household id. 
+
+
+
+```{r import household data 2005, echo = F, message = F}
+data_2005 <- read_dta("Raw data/seminar_paper_data/2005_hhsurvey.dta") %>% 
+  rename(hh_id = folio,
+        assist1 = s3_08,  
+        reason = s3_09, 
+        members = nm_y,
+        sex = s1_02,
+        age = s1_03,
+        relation = s1_05,
+        literacy1 = s3_01,
+        register1 = s3_04,
+        school_level = s3_05a,
+        grade = s3_05b,
+        repeated = s3_07,
+        income = y_perc1A,
+        educ = aoesc,
+        job = s4_16cod,
+        tasks = s4_16b,
+        pov_line = z,
+        extr_pov = z_ext) 
+
+hh_2005 <- data_2005 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2005,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+         reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         attend = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 17 ~ 1,
+                             school_level != 17 ~ 0),
+         secondary = case_when(school_level == 18 ~ 1,
+                               school_level != 18 ~ 0))
+              
+```
+
+
+
+```{r export summary table 2005, echo = F, message = F}
+export_summary_table(dfSummary(hh_2005)) 
+
+```
+
+
+```{r import household data 2006, echo = F, message = F}
+data_2006 <- read_dta("Raw data/seminar_paper_data/2006_hhsurvey.dta")  %>% 
+  rename(hh_id = Folio,
+        assist1 = s4_08,  
+        reason = S4_09, 
+        members = mhogar,
+        sex = s1_02,
+        age = s1_03,
+        relation = s1_05,
+        literacy1 = s4_01,
+        register1 = s4_04,
+        school_level = s4_05a,
+        grade = s4_05b,
+        repeated = s4_07,
+        income = yhogpcf,
+        urb_rur = Urb_Rur,
+        depto = ID01,
+        educ = añoe,
+        job = s5_17cod,
+        tasks = s5_16b,
+        pov_line = z,
+        extr_pov = zext) 
+
+hh_2006 <- data_2006 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2006,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+           reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         attend = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 17 ~ 1,
+                             school_level != 17 ~ 0),
+         secondary = case_when(school_level == 18 ~ 1,
+                               school_level != 18 ~ 0))
+```
+
+```{r exporting data table, echo = F, message = F}
+export_summary_table(dfSummary(hh_2006))
+```
+
+```{r import household data 2007, echo = F, message = F}
+data_2007 <- read_dta("Raw data/seminar_paper_data/2007_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist1 = s4_10,  
+        reason = s4_11, 
+        members = mhogar,
+        sex = s1_03,
+        age = s1_04,
+        relation = s1_06,
+        literacy1 = s4_01,
+        register1 = s4_06,
+        school_level = s4_07a,
+        grade = s4_07b,
+        repeated = s4_09,
+        income = yhogpcf,
+        voucher = s4_05,
+        educ = a_oe,
+        job = s5_16co,
+        tasks = s5_16b,
+        pov_line = z,
+        extr_pov = zext) 
+
+hh_2007 <- data_2007 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2007,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+           reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         attend = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 17 ~ 1,
+                             school_level != 17 ~ 0),
+         secondary = case_when(school_level == 18 ~ 1,
+                               school_level != 18 ~ 0))
+```
+
+```{r import household data 2011, echo = F, message = F}
+data_2011 <- read_dta("Raw data/seminar_paper_data/2011_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist1 = s4_12,  
+        reason = s4_13,
+        sex = s1_03,
+        age = s1_04,
+        relation = s1_08,
+        literacy1 = s4_01,
+        register1 = s4_05,
+        grade = s4_06b,
+        repeated = s4_11a,
+        income = yhogpc,
+        school_level = s4_06a,
+        urb_rur = area,
+        breakfast = s4_07,
+        voucher = s4_08,
+        voucher_spent = s4_09,
+        educ = e,
+        job = cod_16a,
+        tasks = s5_16b,
+        pov_line = z,
+        extr_pov = zext) 
+
+hh_2011 <- data_2011 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2011,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+           reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                               literacy1 == 2 ~ 0), 
+          female = case_when(sex == 2 ~ 1,
+                             sex == 1 ~ 0),
+           rural = case_when(urb_rur == 1 ~ 0,
+                             urb_rur == 2 ~ 1), 
+           attend = case_when(assist1 == 1 ~ 1,
+                              assist1 == 2 ~ 0),
+           register = case_when(register1 == 1 ~ 1,
+                                register1 == 2 ~ 0),
+         primary = case_when(school_level == 16 ~ 1,
+                             school_level != 16 ~ 0),
+         secondary = case_when(school_level == 17 ~ 1,
+                               school_level != 17 ~ 0))
+```
+
+```{r household data 2012, echo = F, message = F}
+data_2012 <- read_dta("Raw data/seminar_paper_data/2012_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist1 = s4_12,  
+        reason = s4_13,
+        sex = s1_03,
+        age = s1_04,
+        relation = s1_08,
+        literacy1 = s4_01,
+        register1 = s4_04,
+        grade = s4_05b,
+        repeated = s4_11a,
+        income = yhogpc,
+        school_level = s4_05a,
+        urb_rur = area,
+        depto = departamento,
+        breakfast = s4_07,
+        voucher = s4_08,
+        voucher_spent = s4_09,
+        educ = e,
+        job = cods5_16a,
+        tasks = s5_16b,
+        pov_line = z,
+        extr_pov = zext) 
+
+hh_2012 <- data_2012 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2012,
+         dept = case_when(depto== "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+           reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+         literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         attend = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 19 ~ 1,
+                             school_level != 19 ~ 0),
+         secondary = case_when(school_level == 20 ~ 1,
+                               school_level != 20 ~ 0))
+
+```
+
+```{r combine household datasets, echo = F, message = F}
+all_years <- hh_2005 %>% 
+  rbind(hh_2005, hh_2006, hh_2007, hh_2011, hh_2012) 
+ 
+
+```
+
+
+The flood data is from the years 2005-2012. The unit of observation is municipality, but the data is later combined to make the unit of observation at the department level to make it comparable with the household survey data.
+
+This data can be found at the following website: http://geosinager.defensacivil.gob.bo/maps/226. It is associated with a map showing the flood occurrences information spatially, and to get the data in a non-spatial format, the flood layer should be downloaded. It may be downloaded in a variety of different formats, including csv.
+
+```{r import flood data, echo = F, message = F}
+flood <- read_csv(file.path("Raw data", "recurrencia_inundacion2002_2012bol.csv")) %>% 
+  rename(dept = NOM_DEP)
+
+flood_summary <- flood %>% 
+  group_by(dept) %>% 
+  summarize_at(vars(starts_with("A_")), sum) %>% 
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "floods") %>%
+  mutate(year = as.numeric(year))
+
+#lagged flood data created in excel
+flood_lag <- read_csv(file.path("Raw data", "lagflood.csv"))
+#library(DataCombine)
+#flood_lags <- slide(flood_summary, Var = "floods", slideBy = -1)
+
+flood_total <- flood_summary %>% 
+  left_join(flood_lag)
+  
+export_summary_table(dfSummary(flood_total))
+
+```
+The drought data also spans the years 2005-2012 and shows the frequency of droughts in each municipality by year.
+
+This data can be obtained from http://geosinager.defensacivil.gob.bo/maps/225. It is shown on a map with different layers, and the raw data may be downloaded in a variety of different forms, including csv. 
+
+```{r importing droughts data, echo = F, message = F}
+#drought data set 
+library(readxl)
+drought <- read_excel(file.path("Raw data", "recurrenciasequia_2002_2012bol (1).xls")) %>% 
+#rename variables
+    rename(dept = NOM_DEP)
+
+drought_summary <- drought %>%
+  group_by(dept) %>% 
+  summarize_at(vars(starts_with("A_")), sum) %>%
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "droughts") %>%
+  mutate(year = as.numeric(year))
+
+#lagged drought data created in excel
+#library(xlsx)
+#write.xlsx(drought_summary, "C:\\Users\\katya\\Documents\\MyDocuments\\A Smith College Spring Semester\\Natural Resource Economics\\seminar-paper-katyagi21\\lagdrought.xlsx")
+
+drought_lag <- read_csv(file.path("Raw data", "lagdrought.csv"))
+
+drought_total <- drought_summary %>% 
+  left_join(drought_lag)
+  
+
+export_summary_table(dfSummary(drought_total))
+
+```
+
+``` {r merging datasets, echo = F, message = F}
+total_data<- all_years %>% 
+  left_join(flood_total) %>%
+  left_join(drought_total) %>%
+  mutate(child = case_when(relation == 3 ~ 1,
+                           relation != 3 ~ 0),
+         grandchild = case_when(relation == 8 ~ 1,
+                                relation != 8 ~ 0),
+         pov_diff = income - pov_line,
+         pov = case_when(pov_diff > 0 ~ 0,
+                         pov_diff < 0 ~ 1),
+         extr_diff = income - extr_pov,
+         extr = case_when (extr_diff > 0 ~ 0,
+                           extr_diff < 0 ~ 1),
+                  work_reason = case_when(reason == "work" ~ 1,
+                                 reason != "work" ~ 0),
+         money_reason = case_when(reason == "money" ~ 1, 
+                                  reason != "money" ~ 0))
+
+
+#total_data %>%
+  #group_by(work_reason, money_reason) %>%
+  #summarise(n = n())
+
+export_summary_table(dfSummary(total_data))
+
+
+save("total_data", file = "processed_data/analysis_data.RData")
+
+```
+
+## Analysis Variables
+
+The variables used in the final analysis are the variables from the flood and drought summaries, showing the number of occurrences in each department per year. The other variables used are from the household data, showing demographic information as well as the dependent variables related to school assistance and registration. The variables "assist" and "register" tell whether the child is currently registered and attending school, and the variables "grade" and "literacy" give further educational information showing what grade the child is in and whether they can read and write. The variables "urb_rur" and "dept" give geographic information, indicating whether the child's household is located in an urban area or a rural area and in what department of the country they are living. Demographic variables such as age, sex, relation to the head of household, number of household members, and income can be used in the analysis as controls.
+
+
+
+```{r creating head of household subset, echo = F, message = F}
+
+hh_head <- subset(total_data, relation == 1, select = c("hh_id", "female", "age", "literacy", "dept", "rural", "income", "year", "educ", "job", "tasks", "pov_diff", "extr_diff", "pov", "extr"))
+
+```
+
+
+```{r creating children subset, echo = F, message = F}
+
+children <- subset(total_data, age < 18 & age > 4, select = c("hh_id", "age", "female", "child", "grandchild", "literacy", "dept", "rural", "attend", "reason", "register", "primary", "secondary", "floods", "droughts", "lag_floods", "lag_droughts", "year", "money_reason", "work_reason"))
+
+household_counts <- children %>%
+group_by(hh_id) %>%
+summarize(num_children = n())
+
+
+children_id <- mutate(children, id = rownames(children))
+  
+total_children <- merge(children_id,household_counts, by="hh_id")
+
+export_summary_table(dfSummary(total_children))
+
+
+total_children %>%
+      group_by(child, grandchild) %>%
+      summarise(n = n())
+
+total_children %>%
+   group_by(work_reason, money_reason) %>%
+   summarise(n = n())
+
+```
+
+```{r combining household head characteristics with children dataset, echo = F, message = F}
+hh_head_2 <- hh_head %>%
+  select(female, age, literacy, educ, job, tasks, income, pov, extr, hh_id) %>%
+  rename (female_hhhead = female,
+          hhhead_age = age,
+          hhhead_literacy = literacy,
+          hhhead_educ = educ,
+          hhhead_job = job,
+          hhhead_tasks = tasks)
+
+total_heads_subset <- hh_head_2 %>% distinct()
+
+#total <- total_children %>%
+  #left_join(hh_head_2)
+#left join command creating the duplicates problem it seems 
+total <- merge(total_children,total_heads_subset, by="hh_id") 
+
+total %>%
+  group_by(reason) %>%
+  summarise(n = n())
+
+total_2 <- subset(total, !(reason == "vacation" & attend == 0)) #taking out the observations with vacation kids
+
+total_subset <- total_2 %>% distinct()
+
+
+
+
+```
+
+
+```{r regression variable specifications, echo = F, message = F}
+
+reg_data <- total_subset %>%
+  mutate(year_factor = as.factor(year),
+         dept_factor = as.factor(dept),
+         lny = log(income + 1),
+         valleys = case_when(dept %in% c("Chuquisaca", "Cochahamba", "Tarija") ~ 1, TRUE ~ 0),
+         mountains = case_when(dept %in% c("La Paz", "Oruro", "Potosi") ~ 1, TRUE ~ 0),
+         plains = case_when(dept %in% c("Beni", "Pando", "Santa Cruz") ~ 1, TRUE ~ 0),
+         flood_secondary = floods * secondary,
+         drought_secondary = droughts * secondary,
+         flood_pov = floods * extr,
+         drought_pov = droughts * extr,
+         flood_lny = floods * lny,
+         drought_lny = floods * lny,
+         lag_flood_lny = lag_floods * lny,
+         lag_drought_lny = lag_droughts * lny,
+         lag_f_secondary = lag_floods * secondary,
+         lag_d_secondary = lag_droughts * secondary)
+
+#adding the region variables for the region fixed-effects option
+#adding interaction terms
+#adding lagged flood and drought variables 
+
+#creating rural sample
+rural <- subset(reg_data, rural == 1, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "lny", "attend", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor", "work_reason", "secondary", "valleys", "mountains", "plains", "dept", "extr", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov", "flood_lny", "drought_lny", "lag_flood_lny", "lag_drought_lny", "lag_f_secondary", "lag_d_secondary"))
+
+reg_data %>%
+  group_by(dept_factor) %>%
+  summarise(n = n())
+
+```
+##Variable Descriptions
+
+\begin{table}
+\centering
+\caption{Variable definitions}
+\label{variableDefinitions}
+\begin{tabular}{ll}
+\hline
+\hline
+Variable name      & Description                                               \\
+\hline
+Attend          & Binary variable, 1 = attends school                          \\
+Register        & Binary variable, 1 = registered for school                   \\
+Work reason     & Binary variable, 1 = missing school for work                 \\
+Lny             & Log of income per capita (in Bolivianos/month)               \\
+Extr            & Binary variable, 1 = below extreme poverty line              \\
+Female          & Binary variable, 1 = female                                  \\
+Age             & Age in years                                                 \\
+Child           & Binary variable, 1 = is child of head of household           \\
+Grandchild      & Binary variable, 1 = is grandchild of head of household      \\
+Num children    & Number of children in the household                          \\
+Secondary       & Binary variable, 1 = in secondary school group               \\
+hhhead educ     & Years of education of head of household                      \\
+female hhhead   & Binary variable, 1 = female head of household                \\
+Floods          & Number of flood occurrences per dept per year                \\
+Droughts        & Number of drought occurrences per dept in current year       \\
+Lag floods      & Number of flood occurrences per dept in the previous year    \\
+Lag droughts    & Number of drought occurrences per dept in the previous year  \\
+Dept            & Department (nine options)                                    \\
+Valleys         & Binary variable, 1 = department is in valleys region         \\
+Mountains       & Binary variable, 1 = department is in mountains region       \\
+Plains          & Binary variable, 1 = department is in plains region          \\
+
+\hline
+\end{tabular}
+\end{table}
+
+```{r create summary statistic table, echo = F, results = 'asis'}
+#creating a table with the main explanatory variables
+
+table_total <- reg_data %>%
+  select(attend, register, work_reason, lny, extr, female, age, child, grandchild, num_children, secondary, hhhead_educ, female_hhhead, floods, droughts, dept, valleys, plains, mountains)
+ 
+
+stargazer::stargazer(as.data.frame(table_total), 
+                     summary = T,
+                     label = "summaryStats",
+                     title = "Summary statistics (full sample)",
+                     header = F,
+                     type = "latex",
+                     digits = 3)
+
+#creating a table dividing the characteristics by urban/rural area
+table_rural <- rural %>%
+  select(attend, register, work_reason, lny, extr, female, age, child, grandchild, num_children, secondary, hhhead_educ, female_hhhead, floods, droughts, dept, valleys, plains, mountains) 
+  
+stargazer::stargazer(as.data.frame(table_rural),
+                     label = "summaryStatsR",
+                     title = "Summary statistics (rural sample)",
+                     summary = T,
+                     header = F,
+                     type = "latex",
+                     digits = 3)
+
+```
+
+#Empirical Model
+see the link for math equation help.
+
+
+
+
+
+
+
+
+
+
+#Results
+
+```{r probit regression total sample, echo = F, message = F}
+
+probitMod_assist <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
+
+probitMod_register <- glm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+
+probitMod_work <- glm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist, probitMod_register, probitMod_work), 
+               title = "Full sample probit regression results", 
+               label = "fullResults1",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+
+```{r probit regression rural sample, echo = F, message = F}
+
+probitMod_assist_r <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
+
+probitMod_register_r <- glm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+probitMod_work_r <- glm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table rural sample, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_r, probitMod_register_r, probitMod_work_r), 
+               title = "Rural sample probit regression results", 
+               label = "fullResults3",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+
+```{r probit regression urban sample, echo = F, message = F}
+
+urban <- subset(reg_data, rural == 0, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "lny", "attend", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor", "work_reason", "secondary", "valleys", "mountains", "plains", "dept", "extr", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov", "flood_lny", "drought_lny", "lag_flood_lny", "lag_drought_lny", "lag_f_secondary", "lag_d_secondary"))
+
+probitMod_assist_u <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))  
+
+probitMod_register_u <- glm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+
+probitMod_work_u <- glm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table urban sample, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_u, probitMod_register_u, probitMod_work_u), 
+               title = "Urban sample probit regression results", 
+               label = "fullResults4",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+
+
+The following tables show the results with the lagged variables for floods and droughts.
+```{r probit regression total sample lagged variables, echo = F, message = F}
+
+probitMod_assist_lt <- glm(attend ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
+
+probitMod_register_lt <- glm(register ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+
+probitMod_work_lt <- glm(work_reason ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table lagged variables, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_lt, probitMod_register_lt, probitMod_work_lt), 
+               title = "Full sample probit regression results (lagged)", 
+               label = "fullResults5",
+               header = F,
+               keep = c("floods", "droughts", "lag_f_secondary", "drought_f_secondary", "lag_flood_lny", "lag_drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+
+```{r probit regression rural sample lagged, echo = F, message = F}
+
+probitMod_assist_lr <- glm(attend ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
+
+probitMod_register_lr <- glm(register ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+probitMod_work_lr <- glm(work_reason ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table rural sample lagged, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_lr, probitMod_register_lr, probitMod_work_lr), 
+               title = "Rural sample probit regression results (lagged)", 
+               label = "fullResults6",
+               header = F,
+               keep = c("floods", "droughts", "lag_f_secondary", "drought_f_secondary", "lag_flood_lny", "lag_drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+
+```{r probit regression urban sample lagged, echo = F, message = F}
+
+probitMod_assist_lu <- glm(attend ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))  
+
+probitMod_register_lu <- glm(register ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+
+probitMod_work_lu <- glm(work_reason ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table urban sample lagged, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_lu, probitMod_register_lu, probitMod_work_lu), 
+               title = "Urban sample probit regression results (lagged)", 
+               label = "fullResults7",
+               header = F,
+               keep = c("floods", "droughts", "lag_f_secondary", "drought_f_secondary", "lag_flood_lny", "lag_drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+
+##Robustness Checks 
+
+The following results show a different income specification, the inclusion of the extreme poverty variable instead of the log of income.
+
+```{r probit regression total sample extr, echo = F, message = F}
+
+probitMod_assistx <- glm(attend ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
+
+probitMod_registerx <- glm(register ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+
+probitMod_workx <- glm(work_reason ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table extr, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assistx, probitMod_registerx, probitMod_workx), 
+               title = "Full sample probit regression results (poverty measure)", 
+               label = "fullResults8",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov","age", "female", "extr", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+
+```{r probit regression rural sample extr, echo = F, message = F}
+
+probitMod_assist_rx <- glm(attend ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
+
+probitMod_register_rx <- glm(register ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+probitMod_work_rx <- glm(work_reason ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table rural sample extr, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_rx, probitMod_register_rx, probitMod_work_rx), 
+               title = "Rural sample probit regression results (poverty measure)", 
+               label = "fullResults9",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov","age", "female", "extr", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+
+```{r probit regression urban sample extr, echo = F, message = F}
+
+probitMod_assist_ux <- glm(attend ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))  
+
+probitMod_register_ux <- glm(register ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+
+probitMod_work_ux <- glm(work_reason ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table urban sample extr, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_ux, probitMod_register_ux, probitMod_work_ux), 
+               title = "Urban sample probit regression results (poverty measure)", 
+               label = "fullResults10",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov","age", "female", "extr", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+
+
+
+
+
+
+The following results show the linear regression models.
+
+```{r linear regressions total sample, echo = F, message = F}
+
+model_assist_t <- lm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
+
+model_register_t <- lm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
+
+model_reason_t <- (lm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data))
+
+```
+
+```{r generate regression table, echo = F, results = "asis"}
+stargazer::stargazer(list(model_assist_t, model_register_t, model_reason_t), 
+               title = "Full sample linear regression results", 
+               label = "fullResults11",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+```
+
+
+
+```{r regression rural sample, echo = F, message = F}
+
+model_assist_r <- (lm(attend ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural))
+summary(model_assist_r)
+model_register_r <- lm(register ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural)
+summary(model_register_r)
+model_reason_r <- (lm(work_reason ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural))
+summary(model_reason)
+
+                                        
+```
+
+```{r generate linear regression table rural sample, echo = F, results = "asis"}
+stargazer::stargazer(list(model_assist_r, model_register_r, model_reason_r), 
+               title = "Rural sample linear regression results", 
+               label = "fullResults12",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+```
+
+
+```{r linear regression urban sample, echo = F, message = F}
+
+model_assist_u <- lm(attend ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban)
+
+model_register_u <- lm(register ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban)
+
+model_reason_u <- lm(work_reason ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban)
+
+```
+
+```{r linear regression generate table urban sample, echo = F, results = "asis"}
+stargazer::stargazer(list(model_assist_u, model_register_u, model_reason_u), 
+               title = "Urban sample linear regression results", 
+               label = "urbanlinearResults",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+
+
+
+# Discussion of Data
+
+The "assist" variable shows that around 60% of people who are registered for school currently assist, while 40% do not assist. The "reason" variable shows that two most common reasons for missing school are for work (31.3%) or vacation (20.5). Out of the people who are registered for school, 6.6% are repeating the grade they are currently in. 
+
+The patterns for households show that the average household has 5.3 members, and the average per capita monthly income per household is 258 bolivianos. Over half of the households in the sample are located in urban areas (56.3), while under half are located in rural areas (43.7). La Paz, Santa Cruz, and Cochabamba are the three departments with the most households in this sample, which corresponds to their overall population distribution.
+
+The patterns in the weather data show that every department experienced multiple floods in 2005, while many but not all experienced droughts. The place that experienced the highest number of flood occurrences overall was Cochabamba, while Beni experienced 13 droughts in 2005. 
+
+
