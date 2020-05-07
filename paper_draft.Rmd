@@ -409,7 +409,15 @@ flood_summary <- flood %>%
   pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "floods") %>%
   mutate(year = as.numeric(year))
 
+#lagged flood data created in excel
+library(xlsx)
+write.xlsx(flood_summary, "C:\Users\katya\Documents\MyDocuments\A Smith College Spring Semester\Natural Resource Economics\seminar-paper-katyagi21/lagflood.xlsx")
+#library(DataCombine)
+#flood_lags <- slide(flood_summary, Var = "floods", slideBy = -1)
+
+
 export_summary_table(dfSummary(flood_summary))
+
 ```
 The drought data also spans the years 2005-2012 and shows the frequency of droughts in each municipality by year.
 
