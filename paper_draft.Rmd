@@ -410,13 +410,14 @@ flood_summary <- flood %>%
   mutate(year = as.numeric(year))
 
 #lagged flood data created in excel
-library(xlsx)
-write.xlsx(flood_summary, "C:\Users\katya\Documents\MyDocuments\A Smith College Spring Semester\Natural Resource Economics\seminar-paper-katyagi21/lagflood.xlsx")
+flood_lag <- read_csv(file.path("Raw data", "lagflood.csv"))
 #library(DataCombine)
 #flood_lags <- slide(flood_summary, Var = "floods", slideBy = -1)
 
-
-export_summary_table(dfSummary(flood_summary))
+flood_total <- flood_summary %>% 
+  left_join(flood_lag)
+  
+export_summary_table(dfSummary(flood_total))
 
 ```
 The drought data also spans the years 2005-2012 and shows the frequency of droughts in each municipality by year.
@@ -435,6 +436,16 @@ drought_summary <- drought %>%
   summarize_at(vars(starts_with("A_")), sum) %>%
   pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "droughts") %>%
   mutate(year = as.numeric(year))
+
+#lagged drought data created in excel
+#library(xlsx)
+#write.xlsx(drought_summary, "C:\\Users\\katya\\Documents\\MyDocuments\\A Smith College Spring Semester\\Natural Resource Economics\\seminar-paper-katyagi21\\lagdrought.xlsx")
+
+drought_lag <- read_csv(file.path("Raw data", "lagdrought.csv"))
+
+drought_total <- drought_summary %>% 
+  left_join(drought_lag)
+  
 
 export_summary_table(dfSummary(drought_summary))
 
