@@ -418,6 +418,7 @@ flood_total <- flood_summary %>%
   left_join(flood_lag)
   
 ```
+
 The drought data also spans the years 2005-2012 and shows the frequency of droughts in each municipality by year.
 
 This data can be obtained from http://geosinager.defensacivil.gob.bo/maps/225. It is shown on a map with different layers, and the raw data may be downloaded in a variety of different forms, including csv. 
@@ -581,6 +582,11 @@ reg_data %>%
   group_by(dept_factor) %>%
   summarise(n = n())
 
+
+reg_data %>%
+   group_by(attend, register) %>%
+   summarise(n = n())
+
 ```
 ##Variable Descriptions
 
@@ -648,6 +654,36 @@ stargazer::stargazer(as.data.frame(table_rural),
 
 ```
 
+
+```{r creating line graphs for variation within variables, echo = F, message = F}
+
+Beni <- subset(flood_summary, dept == "Beni" & year > 2003, select = c("year", "floods")) 
+Chuq <- subset(flood_summary, dept == "Chuquisaca" & year > 2003, select = c("year", "floods"))
+Pando <- subset(flood_summary, dept == "Pando" & year > 2003, select = c("year", "floods"))
+SantaCruz <- subset(flood_summary, dept == "Santa Cruz" & year > 2003, select = c("year", "floods"))
+Oruro <- subset(flood_summary, dept == "Oruro" & year > 2003, select = c("year", "floods"))
+Potosi <- subset(flood_summary, dept == "Potosi" & year > 2003, select = c("year", "floods"))
+LaPaz <- subset(flood_summary, dept == "La Paz" & year > 2003, select = c("year", "floods"))
+Tarija <- subset(flood_summary, dept == "Tarija" & year > 2003, select = c("year", "floods"))
+Cocha <- subset(flood_summary, dept == "Cochabamba" & year > 2003, select = c("year", "floods"))
+# Create a first line
+plot(LaPaz, type = "b", frame = FALSE, pch = 19, 
+     col = "red", xlab = "year", ylab = "flood counts")
+# Add lines
+lines(Potosi, pch = 18, col = "orange", type = "b", lty = 1)
+lines(Oruro, pch = 18, col = "orangered4", type = "b", lty = 1)
+lines(Beni, pch = 18, col = "green", type = "b", lty = 1)
+lines(Pando, pch = 18, col = "yellow", type = "b", lty = 1)
+lines(SantaCruz, pch = 18, col = "green4", type = "b", lty = 1)
+lines(Cocha, pch = 18, col = "midnightblue", type = "b", lty = 1)
+lines(Tarija, pch = 18, col = "mediumorchid1", type = "b", lty = 1)
+lines(Chuq, pch = 18, col = "blue", type = "b", lty = 1)
+# Add a legend to the plot
+legend("topleft", legend=c("LaPaz", "Potosi", "Oruro", "Beni", "Pando", "SantaCruz", "Cochabamba", "Tarija", "Chuquisaca"), col=c("red", "orange", "orangered4", "green", "yellow", "green4", "midnightblue", "mediumorchid1", "blue"), lty = 1:2, cex=0.8)
+
+```
+
+
 #Empirical Model
 see the link for math equation help.
 
@@ -662,11 +698,12 @@ see the link for math equation help.
 
 #Results
 
+
 ```{r probit regression total sample, echo = F, message = F}
 
 probitMod_assist <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
 
-probitMod_register <- glm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+probitMod_register <- glm(register ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
 
 probitMod_work <- glm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
 
@@ -685,7 +722,7 @@ stargazer::stargazer(list(probitMod_assist, probitMod_register, probitMod_work),
 
 probitMod_assist_r <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
 
-probitMod_register_r <- glm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+probitMod_register_r <- glm(register ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
 
 probitMod_work_r <- glm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
 
@@ -706,7 +743,7 @@ urban <- subset(reg_data, rural == 0, select = c("hh_id", "id", "age", "female",
 
 probitMod_assist_u <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))  
 
-probitMod_register_u <- glm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+probitMod_register_u <- glm(register ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
 
 probitMod_work_u <- glm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
 
@@ -727,7 +764,7 @@ The following tables show the results with the lagged variables for floods and d
 
 probitMod_assist_lt <- glm(attend ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
 
-probitMod_register_lt <- glm(register ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+probitMod_register_lt <- glm(register ~ lag_floods + lag_flood_lny + lag_droughts + lag_drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
 
 probitMod_work_lt <- glm(work_reason ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
 
@@ -746,7 +783,7 @@ stargazer::stargazer(list(probitMod_assist_lt, probitMod_register_lt, probitMod_
 
 probitMod_assist_lr <- glm(attend ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
 
-probitMod_register_lr <- glm(register ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+probitMod_register_lr <- glm(register ~ lag_floods + lag_flood_lny + lag_droughts + lag_drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
 
 probitMod_work_lr <- glm(work_reason ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
 
@@ -765,7 +802,7 @@ stargazer::stargazer(list(probitMod_assist_lr, probitMod_register_lr, probitMod_
 
 probitMod_assist_lu <- glm(attend ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))  
 
-probitMod_register_lu <- glm(register ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+probitMod_register_lu <- glm(register ~ lag_floods + lag_flood_lny + lag_droughts + lag_drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
 
 probitMod_work_lu <- glm(work_reason ~ lag_floods + lag_f_secondary + lag_flood_lny + lag_droughts + lag_d_secondary + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
 
@@ -788,7 +825,7 @@ The following results show a different income specification, the inclusion of th
 
 probitMod_assistx <- glm(attend ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
 
-probitMod_registerx <- glm(register ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+probitMod_registerx <- glm(register ~ floods + flood_pov + droughts + drought_pov + age + female + extr + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
 
 probitMod_workx <- glm(work_reason ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
 
@@ -807,7 +844,7 @@ stargazer::stargazer(list(probitMod_assistx, probitMod_registerx, probitMod_work
 
 probitMod_assist_rx <- glm(attend ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
 
-probitMod_register_rx <- glm(register ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+probitMod_register_rx <- glm(register ~ floods + flood_pov + droughts + drought_pov + age + female + extr + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
 
 probitMod_work_rx <- glm(work_reason ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
 
@@ -826,7 +863,7 @@ stargazer::stargazer(list(probitMod_assist_rx, probitMod_register_rx, probitMod_
 
 probitMod_assist_ux <- glm(attend ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))  
 
-probitMod_register_ux <- glm(register ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
+probitMod_register_ux <- glm(register ~ floods + flood_pov + droughts + drought_pov + age + female + extr + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
 
 probitMod_work_ux <- glm(work_reason ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban, family=binomial(link="probit"))
 
@@ -847,7 +884,7 @@ The following results show the region fixed-effects instead of department fixed-
 
 probitMod_assist_g <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = reg_data, family=binomial(link="probit"))  
 
-probitMod_register_g <- glm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = reg_data, family=binomial(link="probit"))
+probitMod_register_g <- glm(register ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = reg_data, family=binomial(link="probit"))
 
 probitMod_work_g <- glm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = reg_data, family=binomial(link="probit"))
 
@@ -866,7 +903,7 @@ stargazer::stargazer(list(probitMod_assist_g, probitMod_register_g, probitMod_wo
 
 probitMod_assist_rg <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = rural, family=binomial(link="probit"))  
 
-probitMod_register_rg <- glm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = rural, family=binomial(link="probit"))
+probitMod_register_rg <- glm(register ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = rural, family=binomial(link="probit"))
 
 probitMod_work_rg <- glm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = rural, family=binomial(link="probit"))
 
@@ -885,7 +922,7 @@ stargazer::stargazer(list(probitMod_assist_rg, probitMod_register_rg, probitMod_
 
 probitMod_assist_ug <- glm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = urban, family=binomial(link="probit"))  
 
-probitMod_register_ug <- glm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = urban, family=binomial(link="probit"))
+probitMod_register_ug <- glm(register ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = urban, family=binomial(link="probit"))
 
 probitMod_work_ug <- glm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + mountains + plains + year_factor, data = urban, family=binomial(link="probit"))
 
@@ -907,7 +944,7 @@ The following results show the linear regression models.
 
 model_assist_t <- lm(attend ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
 
-model_register_t <- lm(register ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
+model_register_t <- lm(register ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
 
 model_reason_t <- (lm(work_reason ~ floods + flood_secondary + flood_lny + droughts + drought_secondary + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data))
 
@@ -927,7 +964,7 @@ stargazer::stargazer(list(model_assist_t, model_register_t, model_reason_t),
 
 model_assist_r <- (lm(attend ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural))
 
-model_register_r <- lm(register ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural)
+model_register_r <- lm(register ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural)
 
 model_reason_r <- (lm(work_reason ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural))
 
@@ -948,7 +985,7 @@ stargazer::stargazer(list(model_assist_r, model_register_r, model_reason_r),
 
 model_assist_u <- lm(attend ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban)
 
-model_register_u <- lm(register ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban)
+model_register_u <- lm(register ~ floods + droughts + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban)
 
 model_reason_u <- lm(work_reason ~ floods + flood_secondary + droughts + drought_secondary + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = urban)
 
