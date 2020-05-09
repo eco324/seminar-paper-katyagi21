@@ -1,9 +1,4 @@
 ---
-output:
-  pdf_document: default
-  html_document: default
----
----
 title: "The Effect of Weather Shocks on Children's Education in Bolivia"
 author: "Katya Garcia-Israel"
 abstract: "Weather shocks have the potential to dramatically affect households' livelihoods and income levels, especially in developing countries. A growing subset of developmental and environmental literature focuses on investigating the relationship between environment and weather factors and household changes in behavior. One frequently cited response to negative weather shocks that decrease income is an increase in child labor to supplement the household income and a decrease in school attendance. This mechanism is especially relevant in agricultural areas but can also be seen in more urban areas if the weather events cause a loss of property, injury, or displace people. This study explores the relationship between flood and drought occurrences and school attendance in Bolivia. Contrary to my hypothesis, I find that floods and droughts actually have positive impacts on school outcomes, a relationship that might indicate that weather events negatively impact agricultural harvests and decrease the demand for children’s labor, thereby allowing them to go to school."
@@ -16,6 +11,7 @@ output:
   pdf_document:
     number_sections: true
     keep_tex: true
+---
 
 ```{r setup, echo = F, message = F}
 knitr::opts_chunk$set(results = 'asis', cache = F)
