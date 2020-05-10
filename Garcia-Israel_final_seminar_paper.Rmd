@@ -1,0 +1,901 @@
+---
+title: "The Effect of Weather Shocks on Children's Education in Bolivia"
+author: "Katya Garcia-Israel"
+abstract: "Weather shocks have the potential to dramatically affect households' livelihoods and income levels, especially in developing countries. A growing subset of developmental and environmental literature focuses on investigating the relationship between environment and weather factors and household changes in behavior. One frequently cited response to negative weather shocks that decrease income is an increase in child labor to supplement the household income and a decrease in school attendance. This mechanism is especially relevant in agricultural areas but can also be seen in more urban areas if the weather events cause a loss of property, injury, or displace people. This study explores the relationship between flood and drought occurrences and school attendance in Bolivia. Contrary to my hypothesis, I find that floods and droughts actually have positive impacts on school outcomes, a relationship that might indicate that weather events negatively impact agricultural harvests and decrease the demand for children’s labor, thereby allowing them to go to school. The impact of droughts on school attendance is negative, indicating that the hypothesis holds for slow-onset weather events in rural areas."
+header-includes:
+   - \usepackage{booktabs}
+   - \usepackage{setspace}
+   - \doublespacing
+   - \usepackage[labelfont=bf]{caption}
+output: 
+  pdf_document:
+    number_sections: true
+    keep_tex: true
+---
+
+```{r setup, echo = F, warning = F, message = F}
+knitr::opts_chunk$set(results = 'asis', cache = F)
+library(tidyverse)
+library(summarytools)
+st_options(plain.ascii = F,
+           style = "rmarkdown",
+           footnote = NA,
+           subtitle.emphasis = F,
+           dfSummary.silent = T,
+           dfSummary.valid.col = F, 
+           tmp.img.dir = "./tmp",
+           dfSummary.style = "grid")
+
+# add haven package to make stata 16 version readable 
+library(foreign)
+library(haven)
+
+#The following custom function simplifies the process of writing dfSummaries to html files
+export_summary_table <- function(dfSummary_output){
+  data_info <- attr(dfSummary_output, "data_info")
+  ds_name <- data_info$Data.frame
+  print(dfSummary_output,
+      file = str_c("output/", ds_name, "_summary.html"),
+      method = "browser",
+      report.title = ds_name)
+}
+```
+
+
+# Introduction
+
+Weather events have been linked to changes in household income, education and working behaviors, especially in developing countries and areas where people are particularly reliant on agriculture. In the 21st century, with the threat of climate change, exploration of these connections is even more crucial. In developmental economics literature, the mechanisms by which weather events affect households’ livelihoods tend to be agricultural, linking adverse precipitation or temperature shocks to decreases in income. This paper seeks to answer the question of whether high occurrences of floods and droughts in a region have an effect on children’s education, specifically in Bolivia.
+
+A key reason for choosing Bolivia as a case study for this research question is its extensive climactic diversity. The country’s borders include parts of the Andes mountains and the Amazon rainforest, as well as grasslands and deciduous forests (Seiler et al 2013). Despite this high level of internal precipitation and temperature variation, the ecological zones correspond fairly well to political boundaries of the country, which is divided into nine departments. Three departments fall into each ecological category: mountains (La Paz, Potosi, and Oruro), valleys (Cochabamba, Tarija, Chuquisaca), and plains (Santa Cruz, Beni, Pando). Figure A1 in the appendix shows the three regional climate divisions and the departmental boundaries, with the mountains in the west, the plains in the north and east, and the valleys in the south-central part of the country. 
+
+While floods tend to occur in the lowland plains, they are also possible in the alpine regions. Floods and droughts also generally occur in specific seasons far apart from one another: January-March is the wet season for most of the country while June-August has the most drought occurrences. With increasing climate change, Bolivia is predicted to become warmer and experience more droughts overall (Seiler et al 2013).
+
+Over the study period of 2005-2012, the percentage of Bolivian men involved in agricultural activities ranged from 37 to 28 percent, making Bolivia an interesting country to study, as it has a mix of rural areas with subsistence and other agriculture as well as a rapid urbanization trend (ILO Estimates).
+
+This paper is structured as follows: the next section contains a review of literature, section III explains the data and methodology, section IV describes the results, section V is the discussion, and section VI concludes. 
+
+
+# Literature Review
+
+Several papers have researched the effects of weather events on general household well-being, examining household responses to shocks on income. Baez et al (2017) find that rural households in Guatemala responded to income shocks after a tropical storm by increasing child labor. Such responses are negatively related to school attendance. Jensen (2000) examines differences in school enrollment rates after rainfall shocks and compares them to unaffected areas, finding that investments in children’s education do decrease in areas that have experienced either heavy or low rainfall.
+
+The impacts of weather shocks could potentially be seen some time after their occurrence. Marchetta et al (2019) address this by including lagged effects in their model, using a weather variable lagged by time to show the potential for a delayed effect on child outcomes. The reasoning behind this, in their case, was that households would observe the impact of the rainy season prior to enrolling in school before making the decision to send their children to school or not. Marchetta et al (2019) seek to answer the question of how the duration of the negative effects of weather shocks on education by testing how test scores are impacted after the shock. Instead of measuring only school attendance, including test scores in the analysis allows for the possibility of seeing patterns in lowered test scores after the weather event. This again suggests the potential of lagged impacts.Shah and Steinberg (2017) found differing effects on enrollment from distinct weather events; droughts led to an increase in school attendance and floods decreased it. The authors gave a few different explanations for why they might be finding these results. Rainfall could be linked to increased malaria and diarrhea which would keep children from attending school or the school meals being served more during drought seasons could serve as an incentive for attending school.
+
+Negative weather shocks can impact different groups in distinct ways. For instance, Marchetta et al find that girls are more negatively affected by extreme weather events. In research on India, Zimmermann (2020) also shows that rainfall shocks affect girls’ schooling more than boys’, and younger children are more insulated from the effects of rainfall shock than older children who are more productive workers. This preference for educating boys does not hold in all contexts; Jensen (2000) finds no difference between boys’ and girls’ school enrollment as a result of rainfall shocks in Cote d’Ivoire.
+
+As opposed to examining the mechanisms of decreased incomes through damaged harvests, Groppo and Kraehnert (2017) explore the effects of livestock mortality on household incomes and education in Mongolia. Their study suggests that weather shock of harsh winters does not affect long-term education choices, as household income decreases but the children do not substitute schooling for labor. The mechanisms by which weather events affect child outcomes are not always tied directly to agriculture; Marchetta et al (2017) study cyclones as well as rainfall variability, which suggests that loss of (capital) and damage to property, as well as the larger economy, could play a role in the household response that is not necessarily tied to decreasing income from harm to agriculture. Their work also emphasizes lack of access to insurance and savings as a main determinant of the negative child outcomes. Teacher attendance during drought rather than rainfall seasons and impacts of migration were other possible mechanisms discussed by Shah and Steinberg (2017).
+
+The methods used in this literature vary. Baez et al (2017) used a regression-based analysis of household consumption and different levels of rainfall varying by location, as well as setting up a probability model of which areas would be most affected by rainfall as a robustness check. Marchetta et al (2019) used a bivariate probit model as their main empirical strategy and a linear probability model as a robustness check. Groppo and Kraehnert (2017) use a difference-in-differences approach to distinguish between areas affected by weather disasters and those that were not. Jensen (2000) examines the differences between enrollment rates in areas that experienced a heavy rainfall shock and areas that did not, using deviation from the long-term mean as an indication of a shock. The identifying assumption is made that there would have been no differential treatment of children’s schooling between geographic areas in Cote d’Ivoire without the negative rainfall shock, an assumption that is supported by examining the percentages of children enrolled in a prior year when neither area experienced a weather shock. Researchers are faced with the problem of ensuring to the best of their ability that the observed changes in household outcomes are not due to unobserved changes unrelated to weather patterns.
+
+# Data and Methods
+
+## Conceptual Framework
+I attempt to answer the question of how weather events impact school attendance and registration using an empirical approach. The theoretical arguments for the analysis are based on the ideas discussed in the literature review, that extreme weather events can impact households’ financial situations, especially in areas where agriculture is important for the local economy and people’s livelihoods. The connection to schooling comes from the idea that financial burdens can cause children to substitute the time they would have spent in school into participating in economic activities to help increase household income. In rural areas, this effect is expected to be the strongest, as there is larger participation in agriculture and many households may use all their members at one point or another to help with the agricultural activities. However, both the urban and rural samples are relevant to the research question because agricultural activity might be taking place in some areas classified as urban. Additionally, other mechanisms linking floods and droughts to school attendance may be at play, such as decreases in real income from property damage, livestock mortality, or higher food prices.
+
+## Data
+
+To answer this question, I used a combination of household survey data and flood and drought occurrences data. The household survey data was taken from the Bolivian National Statistical Institute as part of their social surveys database. The household surveys used were from the years 2005-2007 and 2011-2012. The intermediary years (2008, 2009, 2010) were not included because the relevant education questions were not part of the 2008 and 2009 surveys, and there was no household survey taken in 2010, the census year. The flood and drought datasets show the number of floods and droughts that occurred per year in each department of Bolivia.  The final compiled dataset is a repeated cross-section as different households were randomly surveyed each year. The main unit of observation is the child’s ID, but the household ID is also used as a unit in order to examine household characteristics such as relations and income per person. For all the combined years, there are 27,921 observations. Table 1 lists the variables used to answer the research question, along with brief descriptions.
+
+
+Table 2 provides summary statistics for the variables used in the analysis using the full sample of children, and Table 3 shows the summary statistics for children living in rural areas. The rural variable in this analysis is based on whether the households live in a municipality with fewer than 2000 people. The total sample contains 24,316 observations while the rural sample is considerably smaller, with 9,804 observations. Many of the statistics have similar values in both samples, but it is notable more children are registered for school in the total sample than in the rural sample, as evidenced by the higher mean on the register variable. The average household income is also lower for children in the rural sample, while the percentage of households below the poverty line is higher. Overall, most of the children ages 5-17 do attend school, with the high mean of the attend variable (0.986). 
+
+
+
+```{r import household data 2005, echo = F, warning = F, message = F}
+data_2005 <- read_dta("Raw data/seminar_paper_data/2005_hhsurvey.dta") %>% 
+  rename(hh_id = folio,
+        assist1 = s3_08,  
+        reason = s3_09, 
+        members = nm_y,
+        sex = s1_02,
+        age = s1_03,
+        relation = s1_05,
+        literacy1 = s3_01,
+        register1 = s3_04,
+        school_level = s3_05a,
+        grade = s3_05b,
+        repeated = s3_07,
+        income = y_perc1A,
+        educ = aoesc,
+        job = s4_16cod,
+        tasks = s4_16b,
+        pov_line = z,
+        extr_pov = z_ext) 
+
+hh_2005 <- data_2005 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2005,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+         reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         attend = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 17 ~ 1,
+                             school_level != 17 ~ 0),
+         secondary = case_when(school_level == 18 ~ 1,
+                               school_level != 18 ~ 0))
+              
+```
+
+
+```{r import household data 2006, echo = F, warning = F, message = F}
+data_2006 <- read_dta("Raw data/seminar_paper_data/2006_hhsurvey.dta")  %>% 
+  rename(hh_id = Folio,
+        assist1 = s4_08,  
+        reason = S4_09, 
+        members = mhogar,
+        sex = s1_02,
+        age = s1_03,
+        relation = s1_05,
+        literacy1 = s4_01,
+        register1 = s4_04,
+        school_level = s4_05a,
+        grade = s4_05b,
+        repeated = s4_07,
+        income = yhogpcf,
+        urb_rur = Urb_Rur,
+        depto = ID01,
+        educ = añoe,
+        job = s5_17cod,
+        tasks = s5_16b,
+        pov_line = z,
+        extr_pov = zext) 
+
+hh_2006 <- data_2006 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2006,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+           reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         attend = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 17 ~ 1,
+                             school_level != 17 ~ 0),
+         secondary = case_when(school_level == 18 ~ 1,
+                               school_level != 18 ~ 0))
+```
+
+```{r import household data 2007, echo = F, warning = F, message = F}
+data_2007 <- read_dta("Raw data/seminar_paper_data/2007_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist1 = s4_10,  
+        reason = s4_11, 
+        members = mhogar,
+        sex = s1_03,
+        age = s1_04,
+        relation = s1_06,
+        literacy1 = s4_01,
+        register1 = s4_06,
+        school_level = s4_07a,
+        grade = s4_07b,
+        repeated = s4_09,
+        income = yhogpcf,
+        voucher = s4_05,
+        educ = a_oe,
+        job = s5_16co,
+        tasks = s5_16b,
+        pov_line = z,
+        extr_pov = zext) 
+
+hh_2007 <- data_2007 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2007,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+           reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         attend = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 17 ~ 1,
+                             school_level != 17 ~ 0),
+         secondary = case_when(school_level == 18 ~ 1,
+                               school_level != 18 ~ 0))
+```
+
+```{r import household data 2011, echo = F, warning = F, message = F}
+data_2011 <- read_dta("Raw data/seminar_paper_data/2011_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist1 = s4_12,  
+        reason = s4_13,
+        sex = s1_03,
+        age = s1_04,
+        relation = s1_08,
+        literacy1 = s4_01,
+        register1 = s4_05,
+        grade = s4_06b,
+        repeated = s4_11a,
+        income = yhogpc,
+        school_level = s4_06a,
+        urb_rur = area,
+        breakfast = s4_07,
+        educ = e,
+        job = cod_16a,
+        tasks = s5_16b,
+        pov_line = z,
+        extr_pov = zext)
+
+hh_2011 <- data_2011 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2011,
+         dept = case_when(depto == "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+           reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+          literacy = case_when(literacy1 == 1 ~ 1,
+                               literacy1 == 2 ~ 0), 
+          female = case_when(sex == 2 ~ 1,
+                             sex == 1 ~ 0),
+           rural = case_when(urb_rur == 1 ~ 0,
+                             urb_rur == 2 ~ 1), 
+           attend = case_when(assist1 == 1 ~ 1,
+                              assist1 == 2 ~ 0),
+           register = case_when(register1 == 1 ~ 1,
+                                register1 == 2 ~ 0),
+         primary = case_when(school_level == 16 ~ 1,
+                             school_level != 16 ~ 0),
+         secondary = case_when(school_level == 17 ~ 1,
+                               school_level != 17 ~ 0))
+```
+
+```{r household data 2012, echo = F, warning = F, message = F}
+data_2012 <- read_dta("Raw data/seminar_paper_data/2012_hhsurvey.dta")  %>% 
+  rename(hh_id = folio,
+        assist1 = s4_12,  
+        reason = s4_13,
+        sex = s1_03,
+        age = s1_04,
+        relation = s1_08,
+        literacy1 = s4_01,
+        register1 = s4_04,
+        grade = s4_05b,
+        repeated = s4_11a,
+        income = yhogpc,
+        school_level = s4_05a,
+        urb_rur = area,
+        depto = departamento,
+        breakfast = s4_07,
+        voucher = s4_08,
+        voucher_spent = s4_09,
+        educ = e,
+        job = cods5_16a,
+        tasks = s5_16b,
+        pov_line = z,
+        extr_pov = zext)
+
+hh_2012 <- data_2012 %>% 
+  select(hh_id, assist1, reason, sex, age,
+         relation, literacy1, register1, school_level, grade, repeated, depto, urb_rur, income, educ, job, tasks, pov_line, extr_pov) %>% 
+  mutate(year = 2012,
+         dept = case_when(depto== "1" ~ "Chuquisaca",
+                          depto == "2" ~ "La Paz",
+                          depto == "3" ~ "Cochabamba",
+                          depto == "4" ~ "Oruro",
+                          depto == "5" ~ "Potosi",
+                          depto == "6" ~ "Tarija",
+                          depto == "7" ~ "Santa Cruz",
+                          depto == "8" ~ "Beni",
+                          depto == "9" ~ "Pando"),
+           reason = case_when(reason == 1 ~ 'vacation',
+                            reason == 2 ~ 'money', 
+                            reason == 3 ~ 'work', 
+                            reason == 4 ~ 'sickness/accident/disability', 
+                            reason == 5 ~ 'distance',
+                            reason == 6 ~ 'finished', 
+                            reason == 7 ~ 'age',
+                            reason == 8 ~ 'not interested', 
+                            reason == 9 ~ 'housework/childcare',
+                            reason == 10 ~ 'other'),
+         literacy = case_when(literacy1 == 1 ~ 1,
+                              literacy1 == 2 ~ 0), 
+         female = case_when(sex == 2 ~ 1,
+                            sex == 1 ~ 0),
+         rural = case_when(urb_rur == 1 ~ 0,
+                           urb_rur == 2 ~ 1), 
+         attend = case_when(assist1 == 1 ~ 1,
+                            assist1 == 2 ~ 0),
+         register = case_when(register1 == 1 ~ 1,
+                              register1 == 2 ~ 0),
+         primary = case_when(school_level == 19 ~ 1,
+                             school_level != 19 ~ 0),
+         secondary = case_when(school_level == 20 ~ 1,
+                               school_level != 20 ~ 0))
+
+```
+
+```{r combine household datasets, echo = F, warning = F, message = F}
+all_years <- hh_2005 %>% 
+  rbind(hh_2005, hh_2006, hh_2007, hh_2011, hh_2012) 
+ 
+
+```
+
+
+```{r import flood data, echo = F, warning = F, message = F}
+flood <- read_csv(file.path("Raw data", "recurrencia_inundacion2002_2012bol.csv")) %>% 
+  rename(dept = NOM_DEP)
+
+flood_summary <- flood %>% 
+  group_by(dept) %>% 
+  summarize_at(vars(starts_with("A_")), sum) %>% 
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "floods") %>%
+  mutate(year = as.numeric(year))
+
+#lagged flood data created in excel
+flood_lag <- read_csv(file.path("Raw data", "lagflood.csv"))
+#library(DataCombine)
+#flood_lags <- slide(flood_summary, Var = "floods", slideBy = -1)
+
+flood_total <- flood_summary %>% 
+  left_join(flood_lag)
+  
+```
+
+```{r importing droughts data, echo = F, warning = F, message = F}
+#drought data set 
+library(readxl)
+drought <- read_excel(file.path("Raw data", "recurrenciasequia_2002_2012bol (1).xls")) %>% 
+#rename variables
+    rename(dept = NOM_DEP)
+
+drought_summary <- drought %>%
+  group_by(dept) %>% 
+  summarize_at(vars(starts_with("A_")), sum) %>%
+  pivot_longer(-dept, names_to = "year", names_prefix = "A_", values_to = "droughts") %>%
+  mutate(year = as.numeric(year))
+
+#lagged drought data created in excel
+#library(xlsx)
+#write.xlsx(drought_summary, "C:\\Users\\katya\\Documents\\MyDocuments\\A Smith College Spring Semester\\Natural Resource Economics\\seminar-paper-katyagi21\\lagdrought.xlsx")
+
+drought_lag <- read_csv(file.path("Raw data", "lagdrought.csv"))
+
+drought_total <- drought_summary %>% 
+  left_join(drought_lag)
+  
+
+export_summary_table(dfSummary(drought_total))
+
+```
+
+``` {r merging datasets, echo = F, warning = F, message = F}
+total_data<- all_years %>% 
+  left_join(flood_total) %>%
+  left_join(drought_total) %>%
+  mutate(child = case_when(relation == 3 ~ 1,
+                           relation != 3 ~ 0),
+         grandchild = case_when(relation == 8 ~ 1,
+                                relation != 8 ~ 0),
+         pov_diff = income - pov_line,
+         pov = case_when(pov_diff > 0 ~ 0,
+                         pov_diff < 0 ~ 1),
+         extr_diff = income - extr_pov,
+         extr = case_when (extr_diff > 0 ~ 0,
+                           extr_diff < 0 ~ 1),
+                  work_reason = case_when(reason == "work" ~ 1,
+                                 reason != "work" ~ 0),
+         money_reason = case_when(reason == "money" ~ 1, 
+                                  reason != "money" ~ 0))
+
+
+#total_data %>%
+  #group_by(work_reason, money_reason) %>%
+  #summarise(n = n())
+
+export_summary_table(dfSummary(total_data))
+
+
+save("total_data", file = "processed_data/analysis_data.RData")
+
+```
+
+
+```{r creating head of household subset, echo = F, warning = F, message = F}
+
+hh_head <- subset(total_data, relation == 1, select = c("hh_id", "female", "age", "literacy", "dept", "rural", "income", "year", "educ", "job", "tasks", "pov_diff", "extr_diff", "pov", "extr"))
+
+```
+
+
+```{r creating children subset, echo = F, warning = F, message = F}
+
+children <- subset(total_data, age < 18 & age > 4, select = c("hh_id", "age", "female", "child", "grandchild", "literacy", "dept", "rural", "attend", "reason", "register", "primary", "secondary", "floods", "droughts", "lag_floods", "lag_droughts", "year", "money_reason", "work_reason"))
+
+household_counts <- children %>%
+group_by(hh_id) %>%
+summarize(num_children = n())
+
+
+children_id <- mutate(children, id = rownames(children))
+  
+total_children <- merge(children_id,household_counts, by="hh_id")
+
+export_summary_table(dfSummary(total_children))
+
+
+```
+
+```{r combining household head characteristics with children, echo = F, warning = F, results = 'hide', message = F}
+hh_head_2 <- hh_head %>%
+  select(female, age, literacy, educ, job, tasks, income, pov, extr, hh_id) %>%
+  rename (female_hhhead = female,
+          hhhead_age = age,
+          hhhead_literacy = literacy,
+          hhhead_educ = educ,
+          hhhead_job = job,
+          hhhead_tasks = tasks)
+
+total_heads_subset <- hh_head_2 %>% distinct()
+
+#total <- total_children %>%
+  #left_join(hh_head_2)
+#left join command creating the duplicates problem it seems 
+total <- merge(total_children,total_heads_subset, by="hh_id") 
+
+total %>%
+  group_by(reason) %>%
+  summarise(n = n())
+#figure out how to get rid of the table 
+
+total_2 <- subset(total, !(reason == "vacation" & attend == 0)) #taking out the observations with vacation kids
+
+total_subset <- total_2 %>% distinct()
+
+
+
+```
+
+
+```{r regression variable specifications, echo = F, warning = F, message = F}
+
+reg_data <- total_subset %>%
+  mutate(year_factor = as.factor(year),
+         dept_factor = as.factor(dept),
+         lny = log(income + 1),
+         valleys = case_when(dept %in% c("Chuquisaca", "Cochahamba", "Tarija") ~ 1, TRUE ~ 0),
+         mountains = case_when(dept %in% c("La Paz", "Oruro", "Potosi") ~ 1, TRUE ~ 0),
+         plains = case_when(dept %in% c("Beni", "Pando", "Santa Cruz") ~ 1, TRUE ~ 0),
+         flood_secondary = floods * secondary,
+         drought_secondary = droughts * secondary,
+         flood_pov = floods * extr,
+         drought_pov = droughts * extr,
+         flood_lny = floods * lny,
+         drought_lny = droughts * lny,
+         lag_flood_lny = lag_floods * lny,
+         lag_drought_lny = lag_droughts * lny,
+         lag_f_secondary = lag_floods * secondary,
+         lag_d_secondary = lag_droughts * secondary)
+
+#adding the region variables for the region fixed-effects option
+#adding interaction terms
+#adding lagged flood and drought variables 
+
+#creating rural sample
+rural <- subset(reg_data, rural == 1, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "lny", "attend", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor", "work_reason", "secondary", "valleys", "mountains", "plains", "dept", "extr", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov", "flood_lny", "drought_lny", "lag_flood_lny", "lag_drought_lny", "lag_f_secondary", "lag_d_secondary", "lag_floods", "lag_droughts"))
+
+```
+
+
+\begin{table}
+\centering
+\caption{Variable definitions}
+\label{variableDefinitions}
+\begin{tabular}{ll}
+\hline
+\hline
+Variable name      & Description                                               \\
+\hline
+Attend          & Binary variable, 1 = attends school (of registered sample)   \\
+Register        & Binary variable, 1 = registered for school                   \\
+Work reason     & Binary variable, 1 = missing school for work                 \\
+Lny             & Log of income per capita (in Bolivianos/month)               \\
+Extr            & Binary variable, 1 = below extreme poverty line              \\
+Female          & Binary variable, 1 = female                                  \\
+Age             & Age in years                                                 \\
+Child           & Binary variable, 1 = is child of head of household           \\
+Grandchild      & Binary variable, 1 = is grandchild of head of household      \\
+Num children    & Number of children in the household                          \\
+Secondary       & Binary variable, 1 = in secondary school group               \\
+hhhead educ     & Years of education of head of household                      \\
+female hhhead   & Binary variable, 1 = female head of household                \\
+Floods          & Number of flood occurrences per dept per year                \\
+Droughts        & Number of drought occurrences per dept in current year       \\
+Lag floods      & Number of flood occurrences per dept in the previous year    \\
+Lag droughts    & Number of drought occurrences per dept in the previous year  \\
+Dept            & Department (nine options)                                    \\
+Valleys         & Binary variable, 1 = department is in valleys region         \\
+Mountains       & Binary variable, 1 = department is in mountains region       \\
+Plains          & Binary variable, 1 = department is in plains region          \\
+
+\hline
+\end{tabular}
+\end{table}
+
+```{r create summary statistic table, echo = F, message = F, warning = F, results = 'asis'}
+#creating a table with the main explanatory variables
+
+table_total <- reg_data %>%
+  select(attend, register, work_reason, lny, extr, female, age, child, grandchild, num_children, secondary, hhhead_educ, female_hhhead, floods, droughts, dept, valleys, plains, mountains)
+ 
+
+stargazer::stargazer(as.data.frame(table_total), 
+                     summary = T,
+                     label = "summaryStats",
+                     title = "Summary statistics (full sample)",
+                     header = F,
+                     type = "latex",
+                     digits = 3)
+
+#creating a table dividing the characteristics by urban/rural area
+table_rural <- rural %>%
+  select(attend, register, work_reason, lny, extr, female, age, child, grandchild, num_children, secondary, hhhead_educ, female_hhhead, floods, droughts, dept, valleys, plains, mountains) 
+  
+stargazer::stargazer(as.data.frame(table_rural),
+                     label = "summaryStatsR",
+                     title = "Summary statistics (rural sample)",
+                     summary = T,
+                     header = F,
+                     type = "latex",
+                     digits = 3)
+
+```
+
+The following graphs plot the flood variables and the drought variables over the sample years to capture the variation between departments and within the same department over time. Figure 2 shows the flood occurrences over time, and Figure 3 shows the droughts. Many of the departments do not actually have much variation between the years, but some events stand out in the graph and are clearly extreme shocks. There is no evidence of a positive or a negative time trend in these variables. Comparing the two graphs, it is evident that in many of the departments have high counts of floods in the same year as low counts of droughts, instead of experiencing both shocks at once in different parts of the region. This is reassuring in terms of being able to assume that the departments are a decent measure of location, as some are quite large, but evidently not so internally ecologically diverse that it confuses the analysis. The main challenge of this data is the unit of location by which the observations are grouped, as the department level is the most disaggregated measure. Yet households on one side of a department many not be experiencing the full effects of the weather shocks than households in another location within the same department.  
+
+```{r creating line graphs for variation within flood variables, echo = F, message = F}
+
+Beni <- subset(flood_summary, dept == "Beni" & year > 2003, select = c("year", "floods")) 
+Chuq <- subset(flood_summary, dept == "Chuquisaca" & year > 2003, select = c("year", "floods"))
+Pando <- subset(flood_summary, dept == "Pando" & year > 2003, select = c("year", "floods"))
+SantaCruz <- subset(flood_summary, dept == "Santa Cruz" & year > 2003, select = c("year", "floods"))
+Oruro <- subset(flood_summary, dept == "Oruro" & year > 2003, select = c("year", "floods"))
+Potosi <- subset(flood_summary, dept == "Potosi" & year > 2003, select = c("year", "floods"))
+LaPaz <- subset(flood_summary, dept == "La Paz" & year > 2003, select = c("year", "floods"))
+Tarija <- subset(flood_summary, dept == "Tarija" & year > 2003, select = c("year", "floods"))
+Cocha <- subset(flood_summary, dept == "Cochabamba" & year > 2003, select = c("year", "floods"))
+# Create a first line
+plot(LaPaz, type = "b", frame = FALSE, pch = 19, main = "Figure 2. Floods Over Time", cex.main = 1, col = "red", xlab = "year", ylab = "flood counts")
+# Add lines
+lines(Potosi, pch = 18, col = "orange", type = "b", lty = 1)
+lines(Oruro, pch = 18, col = "orangered4", type = "b", lty = 1)
+lines(Beni, pch = 18, col = "green", type = "b", lty = 1)
+lines(Pando, pch = 18, col = "yellow", type = "b", lty = 1)
+lines(SantaCruz, pch = 18, col = "green4", type = "b", lty = 1)
+lines(Cocha, pch = 18, col = "midnightblue", type = "b", lty = 1)
+lines(Tarija, pch = 18, col = "mediumorchid1", type = "b", lty = 1)
+lines(Chuq, pch = 18, col = "blue", type = "b", lty = 1)
+# Add a legend to the plot
+legend("topleft", legend=c("La Paz", "Potosi", "Oruro", "Beni", "Pando", "Santa Cruz", "Cochabamba", "Tarija", "Chuquisaca"), col=c("red", "orange", "orangered4", "green", "yellow", "green4", "midnightblue", "mediumorchid1", "blue"), lty = 1:2, cex=0.8)
+
+```
+
+```{r creating line graphs for variation within drought variables, echo = F, message = F}
+
+Benid <- subset(drought_summary, dept == "Beni" & year > 2003, select = c("year", "droughts")) 
+Chuqd <- subset(drought_summary, dept == "Chuquisaca" & year > 2003, select = c("year", "droughts"))
+Pandod <- subset(drought_summary, dept == "Pando" & year > 2003, select = c("year", "droughts"))
+SantaCruzd <- subset(drought_summary, dept == "Santa Cruz" & year > 2003, select = c("year", "droughts"))
+Orurod <- subset(drought_summary, dept == "Oruro" & year > 2003, select = c("year", "droughts"))
+Potosid <- subset(drought_summary, dept == "Potosi" & year > 2003, select = c("year", "droughts"))
+LaPazd <- subset(drought_summary, dept == "La Paz" & year > 2003, select = c("year", "droughts"))
+Tarijad <- subset(drought_summary, dept == "Tarija" & year > 2003, select = c("year", "droughts"))
+Cochad <- subset(drought_summary, dept == "Cochabamba" & year > 2003, select = c("year", "droughts"))
+# Create a first line
+plot(LaPazd, type = "b", frame = FALSE, pch = 19, main = "Figure 3. Droughts Over Time", cex.main = 1, col = "red", xlab = "year", ylab = "drought counts")
+# Add lines
+lines(Potosid, pch = 18, col = "orange", type = "b", lty = 1)
+lines(Orurod, pch = 18, col = "orangered4", type = "b", lty = 1)
+lines(Benid, pch = 18, col = "green", type = "b", lty = 1)
+lines(Pandod, pch = 18, col = "yellow", type = "b", lty = 1)
+lines(SantaCruzd, pch = 18, col = "green4", type = "b", lty = 1)
+lines(Cochad, pch = 18, col = "midnightblue", type = "b", lty = 1)
+lines(Tarijad, pch = 18, col = "mediumorchid1", type = "b", lty = 1)
+lines(Chuqd, pch = 18, col = "blue", type = "b", lty = 1)
+# Add a legend to the plot
+legend("topleft", legend=c("La Paz", "Potosi", "Oruro", "Beni", "Pando", "Santa Cruz", "Cochabamba", "Tarija", "Chuquisaca"), col=c("red", "orange", "orangered4", "green", "yellow", "green4", "midnightblue", "mediumorchid1", "blue"), lty = 1:2, cex=0.8)
+
+```
+
+## Model Specification
+
+The main econometric model used in the analysis is a probit regression model, as my three dependent variables are all binary variables with values of 0 or 1. *Floods* and *droughts* are the two main explanatory variables, along with the interaction terms *floods_lny* and *droughts_lny*, which capture the differing effect that weather shocks have on schooling outcomes for children of different income levels. These interaction terms were formed by multiplying the *flood* and *drought* variables with the *lny*, logged per capita monthly income, variable. Several control variables are inserted into the regression to control for income, age and sex of the child, sex and education level of the household head, number of other children in the household and whether the child is the child or grandchild of the household head. The subscript 'd' refers to the department and 't' to the year, as the probit regression utilizes both department-level and year fixed-effects. 
+
+$1. attend_{dt} = \beta_{1}floods_{dt} + \beta_{2}droughts_{dt} + \beta_{3}floods*lny_{dt} + \beta_{4}droughts*lny_{dt} + \beta_{5}age_{dt} + \beta_{6}female_{dt} + \beta_{7}lny_{dt} + \beta_{8}secondary_{dt} + \beta_{9}child_{dt} + \beta_{10}grandchild_{dt} + \beta_{11}num\_children_{dt} + \beta_{12}hhhead\_educ_{dt} + \beta_{13}female\_hhhead_{dt} + \beta_{i} + \gamma_{t} + \epsilon_{dt}$
+
+$2. register_{dt} = \beta_{1}floods_{dt} + \beta_{2}droughts_{dt} + \beta_{3}floods*lny_{dt} + \beta_{4}droughts*lny_{dt} + \beta_{5}age_{dt} + \beta_{6}female_{dt} + \beta_{7}lny_{dt} + \beta_{8}secondary_{dt} + \beta_{9}child_{dt} + \beta_{10}grandchild_{dt} + \beta_{11}num\_children_{dt} + \beta_{12}hhhead\_educ_{dt} + \beta_{13}female\_hhhead_{dt} + \beta_{i} + \gamma_{t} + \epsilon_{dt}$
+
+$3. work\_reason_{dt} = \beta_{1}floods_{dt} + \beta_{2}droughts_{dt} + \beta_{3}floods*lny_{dt} + \beta_{4}droughts*lny_{dt} + \beta_{5}age_{dt} + \beta_{6}female_{dt} + \beta_{7}lny_{dt} + \beta_{8}secondary_{dt} + \beta_{9}child_{dt} + \beta_{10}grandchild_{dt} + \beta_{11}num\_children_{dt} + \beta_{12}hhhead\_educ_{dt} + \beta_{13}female\_hhhead_{dt} + \beta_{i} + \gamma_{t} + \epsilon_{dt}$
+
+
+In the first two regression equations, measuring school attendance and school registration, the omitted condition is not attending school and not registering for school, respectively. Thus, increases in the dependent variable indicate higher probabilities of going to school. Variables such as floods and droughts are expected to have negative coefficients, as I hypothesize that experiencing weather shocks will decrease the likelihood going to school. The *age* variable and the secondary school variable are both expected to have a negative coefficient, as older children would be more likely to be able to work and have a higher opportunity cost of going to school. A higher number of children in the household is expected to cause a decrease in the probability of attending school. Higher levels of income, being the child or grandchild of the household head, high levels of education of the household head, and having a female household head are all expected to be connected to higher probabilities of school attendance and registration. 
+
+The third regression uses the sample of children that do not attend school, and the dependent variable is *work_reason*, which shows the likelihood of work being the reason why the child is not attending school. For the omitted condition of 0, those children listed reasons other than work as their motivation for not attending school. In this regression, I would expect the coefficients on the flood and drought variables to be positive, and the control variables to flip signs, as the factors that would cause a household to send a child to school have the opposite effect on the child’s likelihood of working. The sample for the third regression is much smaller than the other two regressions, 3,939 versus the 24,316 in the attend sample and the 27,921 in the registering sample.
+
+These three regression equations are repeated in the analysis using different samples, the total number of households and the sample that live in rural areas. In the lagged variable analysis, the same model is used, but *floods* and *droughts* are replaced by *lag_floods* and *lag_droughts*, which represent the number of floods or droughts in each department during the previous year. Including the lagged variables is a way of testing whether households’ responses to weather shocks are long-term or short-term.
+
+
+# Results
+
+Table 4 presents the results from the full sample, which includes both urban and rural locations. The first regression with the dependent variable *attend* and the second, with dependent variable *register*, have similar results. The flood variables were significant for the both, with positive coefficients, indicating that increases in floods lead to small increases in the probability of children attending or registering for school. The interaction terms between floods and income were also highly significant, and the coefficients were negative, suggesting that the slope of the relationship between floods and school attendance becomes flatter as household income increases. Thus, floods do not have as large of an impact on richer families’ school attendance. The coefficient on *floods* had a larger magnitude in the regression testing school attendance than in the regression for registration, which could point to floods having short-term rather than long-term effects on behavior. Similar results for floods occurred for the rural sample, as seen in Table 5. 
+
+```{r probit regression total sample, echo = F, warning = F, message = F}
+
+probitMod_assist <- glm(attend ~ floods + flood_lny + droughts + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
+
+probitMod_register <- glm(register ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+
+probitMod_work <- glm(work_reason ~ floods + flood_lny + droughts + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table, echo = F, message = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist, probitMod_register, probitMod_work), 
+               title = "Full sample probit regression results", 
+               label = "fullResults1",
+               header = F,
+               keep = c("floods", "droughts", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+
+The *droughts* variable was only significant in the rural sample, but its coefficient had a negative sign, indicating that for every increase in drought occurrence, the probability of attending or registering for school decreased. The coefficient on the interaction term between droughts and income was also highly significant but positive, showing that higher levels of income decrease the slope of the negative relationship between droughts and school attendance, but not school registration. 
+
+All of the control variables were significant in at least one of the education outcomes regressions. *Age* had a negative impact on school attendance but a positive effect on registration. The *female* variable had a negative coefficient for probability of registering at school, while the variable indicating the presence of a female household head had a positive coefficient. Increases in years of the household head’s education also caused a higher probability of registration and attendance. Being the child or the grandchild of the household head positively impacted the probability of going to school, as did being registered for secondary school as opposed to primary school.
+
+The flood and drought coefficients were not significant for the third regression, with dependent variable *work_reason*. However, for the full sample in Table 4, the control variables that were significant are telling: *female*, *child*, and *grandchild* had negative coefficients, while the variable indicating the number of children in the household had a positive coefficient. The female household head variable was highly significant and had a positive coefficient. These results could suggest that children in households with female heads might be working because of the absence of working-age men, and that female children were less likely to be absent from school due to work reasons. However, none of these results are significant in the rural sample in Table 5.
+
+
+```{r probit regression rural sample, echo = F, warning = F, message = F}
+
+probitMod_assist_r <- glm(attend ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
+
+probitMod_register_r <- glm(register ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+probitMod_work_r <- glm(work_reason ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table rural sample, echo = F, message = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_r, probitMod_register_r, probitMod_work_r), 
+               title = "Rural sample probit regression results", 
+               label = "fullResults3",
+               header = F,
+               keep = c("floods", "droughts", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+
+Tables 6 and 7 examine the effect of the lagged flood and drought variables on school outcomes, showing whether weather events that occurred one year ago have a present impact. The coefficient on *lag_floods* was highly significant and positive again for both the total and the rural sample, showing that areas that experienced floods in the previous year also have higher probabilities of school attendance and registration. The negative coefficient on the interaction term between income and floods again points to a decrease in the slope of the relationship between floods and school outcomes. The coefficient on lagged droughts was significant and positive only for the *register* regression in the total sample. In the rural sample, however, it was significant and positive for the attending school variable. The change in the sign of the *droughts* coefficient shows that people might respond more slowly to droughts in terms of their behavioral changes in education.
+
+```{r probit regression total sample lagged variables, echo = F, warning = F, message = F}
+
+probitMod_assist_lt <- glm(attend ~ lag_floods + lag_flood_lny + lag_droughts + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
+
+probitMod_register_lt <- glm(register ~ lag_floods + lag_flood_lny + lag_droughts + lag_drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+
+probitMod_work_lt <- glm(work_reason ~ lag_floods + lag_flood_lny + lag_droughts + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table lagged variables, echo = F, message = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_lt, probitMod_register_lt, probitMod_work_lt), 
+               title = "Full sample probit regression results (lagged)", 
+               label = "fullResults5",
+               header = F,
+               keep = c("floods", "droughts", "lag_flood_lny", "lag_drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"),
+               keep.stat = c("n", "adj.rsq"))
+
+```
+
+```{r probit regression rural sample lagged, echo = F, warning = F, message = F}
+
+probitMod_assist_lr <- glm(attend ~ lag_floods + lag_flood_lny + lag_droughts + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
+
+probitMod_register_lr <- glm(register ~ lag_floods + lag_flood_lny + lag_droughts + lag_drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+probitMod_work_lr <- glm(work_reason ~ lag_floods + lag_flood_lny + lag_droughts + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+```
+
+```{r probit regression table rural sample lagged, message= F, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_lr, probitMod_register_lr, probitMod_work_lr), 
+               title = "Rural sample probit regression results (lagged)", 
+               label = "fullResults6",
+               header = F,
+               keep = c("floods", "droughts", "lag_flood_lny", "lag_drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
+## Robustness Checks
+
+As a robustness check, I change the model specification to linear to see what effect that has on the results and how influenced they are by the probit model specification. Tables 8 and 9 show the results for the linear regression model, with the same regressions as the probit model results: *attend*, *register*, *work_reason*. Again, these results had similar signs and levels of significance to the probit regression model, indicating that these results are not due to the probit model specification. *Floods* was significant in both the rural and total samples, showing the same pattern of higher likelihood of school attendance and registration in years with high flood occurrences. The interaction terms *flood_lny* and *drought_lny* were highly significant and negative, showing that floods and droughts would have a more moderate impact on households at higher income levels as opposed to poorer households who would likely see an exacerbated effect of the schooling outcome relationships. However, the *droughts* variable was not at all significant in the either sample with the OLS regression. For the total sample, the adjusted R-squared was 0.026 for the regression testing school attendance and 0.095 for the regression testing school registration. The adjusted R-squared was 0.027 for the *attend* regression and 0.08 for the *register* regression in the rural sample. These numbers are quite low, indicating that there are other factors contributing to the variation in the dependent variables that are not being captured in the model. The F-statistics were all highly significant at the 1% level, indicating that the inclusion of the independent variables in the model are contributing to explaining the variation in the dependent variables. 
+
+```{r linear regressions total sample, echo = F, message = F}
+
+model_assist_t <- lm(attend ~ floods + flood_lny + droughts + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
+
+model_register_t <- lm(register ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data)
+
+model_reason_t <- (lm(work_reason ~ floods + flood_lny + droughts + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data))
+
+```
+
+```{r linear regressions rural sample, echo = F, message = F}
+
+model_ar <- lm(attend ~ floods + flood_lny + droughts + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural)
+
+model_rr <- lm(register ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural)
+
+```
+
+```{r generate regression table, echo = F, message = F, results = "asis"}
+stargazer::stargazer(list(model_assist_t, model_register_t), 
+               title = "Full sample linear regression results", 
+               label = "fullResults11",
+               header = F,
+               keep = c("floods", "droughts", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead")) 
+```
+
+```{r generate regression table rural, echo = F, message = F, results = "asis"}
+stargazer::stargazer(list(model_ar, model_rr), 
+               title = "Rural sample linear regression results", 
+               label = "fullResults12",
+               header = F,
+               keep = c("floods", "droughts", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead")) 
+```
+
+# Discussion
+
+The flood results ended up being contrary to the hypothesis discussed in the conceptual framework section, the theory supported by the literature review that weather events will have detrimental impacts on children’s education via the mechanism of agricultural damages requiring increased child labor. As the results were highly significant, it suggests that in the Bolivian context during the years from 2005-2012, there was another relationship between floods and droughts and schooling. The alternate theory is that weather events have negative effects on agricultural activities in an area, which then decreases the demand for labor in agriculture sectors.  If children’s labor is no longer required if crops are destroyed, the opportunity cost of going to school lessens considerably and they may become more likely to register and attend. The significance and direction of the coefficient on the interaction terms linking floods with income in the main probit regression also lend credence to that theory. 
+
+The drought results for the rural sample did correspond to the argument that weather events decrease income and increase the opportunity cost of school attendance as there was a significant negative relationship between droughts and school attendance. The result in Table 4 assumes that the effect of floods or droughts on schooling will be seen in the same year. This is a more convincing assumption for floods since they are a sudden-onset weather event that tend to have instantaneous effects, but as droughts are slow-onset their negative effects on people’s livelihoods might not be seen for months or even years, depending on how long they last. This issue is addressed by the inclusion of the lagged effects variables in Tables 6 and 7. For the flood variables, the lagged sample showed similar results as the current year sample, suggesting a positive relationship again between *floods* and the *register* and *attend* variables. The story with the droughts is more complex, especially in the rural areas. The results for the rural sample without the lag on *droughts* indicate that when a department is faced with high occurrences of drought in a given year, children will be less lightly to attend school. With the lag, the relationship becomes positive. This could point to a cumulative effect of having droughts last for a longer time. In that case, it could make sense that prolonged weather shocks might decrease the opportunity cost of going to school, but in the first year of a drought, agricultural crops might not be as affected. 
+
+The results from the interaction terms were especially interesting as they were highly significant and pointed to an exacerbated effect of weather shocks on school outcomes when income levels were lower. This follows the idea that poorer households will be more likely to have children engaged in agricultural activities, who would then be affected the most by weather shocks. In the case of floods, children at lower income levels would be more likely to go to school, while in the case of droughts, children in rural areas at lower income levels would be more likely to be absent from school.
+
+The *work_reason* regression results were not statistically significant, probably due to the very small number of observations.  As the main regression specification was a probit model, more observations are needed for that specific subsample, since probit models run best with higher amounts of observations to determine likelihood results. Yet the significance of the control variables suggests a story where children in households with many children and with female heads of household end up having a higher likelihood of missing school for work-related reasons. This interpretation follows the hypothesis of higher numbers of children putting a strain on income and raising the opportunity cost of schooling.
+
+In the robustness checks section, it was clear that the OLS results corresponded fairly well to the main probit regression results, as the significance, sign, and magnitude of the coefficients were comparable for all but the *droughts* variable in the rural sample. The significance of the F-statistic showed that the inclusion of the explanatory variables to the model improved the explanation of variation in the dependent variables. However, the adjusted R-squared statistics were low for all the samples, pointing to missing information in the model that could not be captured by this data. The adjusted R-squared values were slightly higher for the regressions with dependent variable *register*. 
+
+On that note, the differing results from the hypothesis could also be due to data limitations. One main limitation of this dataset is the fact that the flood and drought occurrences are measured at department level. Since there may be instances in which floods only affect one small area within a large department, the data cannot capture the fact that some people who are counted as being affected by this weather event by virtue of being in the same department might not be in the vicinity of the affected area at all. However, there is also the possibility that weather events in one part of the department can have consequences on other areas, through the mechanisms of higher food prices due to agricultural damage or limitations in human travel flows. 
+
+# Conclusion
+
+In sum, the question of the relationship between negative weather events and schooling outcomes is difficult to answer, due to constraints of data as well as the potential for conflicting stories and mechanisms that are applicable to certain groups or locations but not others. The case of Bolivia is especially interesting due to the diverse climates within the country and even within departments, but this variation can sometimes be detrimental to the analysis when the data is not sufficiently disaggregated. Although the theoretical mechanism I anticipated was that increases in floods and droughts would decrease the probability of school attendance and school registration and increase the probability of missing school due to work reasons, the significant results for floods contradicted that theory. 
+
+For the rural sample, however, droughts were found to have a negative impact on school attendance, which suggests that households have different levels of resilience to different types of natural disasters. The threat of climate change making Bolivia more vulnerable to droughts could exacerbate this effect. An alternative to the theoretical framework I hypothesized is the idea that these weather shocks actually enable the children to go to school more frequently because their labor is no longer needed for agricultural activities at times when harvests are bad. Further exploration is needed to fully isolate these effects and determine which stories occur at which times. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# References
+
+Baez, J.E., Lucchetti, I., Genoni, M. E., & Salazar, M. (2017). Gone with the storm: Rainfall shocks and household wellbeing in Guatemala. Journal of Development Studies, 53(8), 1253-1271. 
+
+GeoSinager. (2016). Mapa Recurrencias de Inundaciones Gestiones 2002-2012. [CSV file]. Retrieved from http://geosinager.defensacivil.gob.bo/maps/226
+
+GeoSinager. (2016). Mapa Recurrencias de Sequias Gestiones 2002-2012. [CSV file]. Retrieved from http://geosinager.defensacivil.gob.bo/maps/225
+
+Groppo, V., and K. Kraehnert. 2017. The Impact of Extreme Weather Events on Education. Journal of Population Economics 30 (2): 433–72
+
+Instituto Nacional de Estadistica. (2005). Encuesta de Hogares (2005) [SAV file]. Retrieved from https://www.ine.gob.bo/index.php/banco/base-de-datos-sociales
+
+International Labour Organization, ILOSTAT database. “Employment in agriculture, male (% of male employment). Data retrieved in September 2019. https://data.worldbank.org/indicator/SL.AGR.EMPL.MA.ZS?locations=BO&view=chart
+
+Jensen, R. (2000). Agricultural volatility and investments in children. American Economic Review Paper and Proceedings, 90(2), 399-404.
+
+Marchetta, F., Sahn, D., Tiberti, L. (2019). The Role of Weather on Schooling and Work of Young Adults in Madagascar. American Journal of Agricultural Economics, 101(4), 1203-1227. 
+
+Seiler, Christian., Hutjes, Ronald W. A., & Kabat, Pavel. (2013). Climate Variability and Trends in Bolivia. Journal of Applied Meteorology and Climatology, 52, 130-146. 
+
+Shah, M., & Steinberg, B.M. (2017). Drought of opportunities: Contemporaneous and long-term impacts of rainfall shocks on human capital. Journal of Political Economy, 125(2), 527-561.
+
+Zimmermann, L. (2020). Remember When It Rained—Schooling Responses to Shocks in India. World Development, 126.
+
+
