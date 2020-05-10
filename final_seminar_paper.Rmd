@@ -13,7 +13,7 @@ output:
     keep_tex: true
 ---
 
-```{r setup, echo = F, message = F}
+```{r setup, echo = F, warning = F, message = F}
 knitr::opts_chunk$set(results = 'asis', cache = F)
 library(tidyverse)
 library(summarytools)
@@ -70,7 +70,7 @@ To answer this question, I used a combination of household survey data and flood
 Table 2 provides summary statistics for the variables used in the analysis using the full sample of children, and Table 3 shows the summary statistics for children living in rural areas. The rural variable in this analysis is based on whether the households live in a municipality with fewer than 2000 people. The total sample contains 24,316 observations while the rural sample is considerably smaller, with 9,804 observations. Many of the statistics have similar values in both samples, but it is notable more children are registered for school in the total sample than in the rural sample, as evidenced by the higher mean on the register variable. The average household income is also lower for children in the rural sample, while the percentage of households below the poverty line is higher. Overall, most of the children ages 5-17 do attend school, with the high mean of the attend variable (0.986). 
 
 
-```{r import household data 2005, echo = F, message = F}
+```{r import household data 2005, echo = F, warning = F, message = F}
 data_2005 <- read_dta("Raw data/seminar_paper_data/2005_hhsurvey.dta") %>% 
   rename(hh_id = folio,
         assist1 = s3_08,  
@@ -132,7 +132,7 @@ hh_2005 <- data_2005 %>%
 ```
 
 
-```{r import household data 2006, echo = F, message = F}
+```{r import household data 2006, echo = F, warning = F, message = F}
 data_2006 <- read_dta("Raw data/seminar_paper_data/2006_hhsurvey.dta")  %>% 
   rename(hh_id = Folio,
         assist1 = s4_08,  
@@ -194,7 +194,7 @@ hh_2006 <- data_2006 %>%
                                school_level != 18 ~ 0))
 ```
 
-```{r import household data 2007, echo = F, message = F}
+```{r import household data 2007, echo = F, warning = F, message = F}
 data_2007 <- read_dta("Raw data/seminar_paper_data/2007_hhsurvey.dta")  %>% 
   rename(hh_id = folio,
         assist1 = s4_10,  
@@ -255,7 +255,7 @@ hh_2007 <- data_2007 %>%
                                school_level != 18 ~ 0))
 ```
 
-```{r import household data 2011, echo = F, message = F}
+```{r import household data 2011, echo = F, warning = F, message = F}
 data_2011 <- read_dta("Raw data/seminar_paper_data/2011_hhsurvey.dta")  %>% 
   rename(hh_id = folio,
         assist1 = s4_12,  
@@ -316,7 +316,7 @@ hh_2011 <- data_2011 %>%
                                school_level != 17 ~ 0))
 ```
 
-```{r household data 2012, echo = F, message = F}
+```{r household data 2012, echo = F, warning = F, message = F}
 data_2012 <- read_dta("Raw data/seminar_paper_data/2012_hhsurvey.dta")  %>% 
   rename(hh_id = folio,
         assist1 = s4_12,  
@@ -381,7 +381,7 @@ hh_2012 <- data_2012 %>%
 
 ```
 
-```{r combine household datasets, echo = F, message = F}
+```{r combine household datasets, echo = F, warning = F, message = F}
 all_years <- hh_2005 %>% 
   rbind(hh_2005, hh_2006, hh_2007, hh_2011, hh_2012) 
  
@@ -389,7 +389,7 @@ all_years <- hh_2005 %>%
 ```
 
 
-```{r import flood data, echo = F, message = F}
+```{r import flood data, echo = F, warning = F, message = F}
 flood <- read_csv(file.path("Raw data", "recurrencia_inundacion2002_2012bol.csv")) %>% 
   rename(dept = NOM_DEP)
 
@@ -409,7 +409,7 @@ flood_total <- flood_summary %>%
   
 ```
 
-```{r importing droughts data, echo = F, message = F}
+```{r importing droughts data, echo = F, warning = F, message = F}
 #drought data set 
 library(readxl)
 drought <- read_excel(file.path("Raw data", "recurrenciasequia_2002_2012bol (1).xls")) %>% 
@@ -436,7 +436,7 @@ export_summary_table(dfSummary(drought_total))
 
 ```
 
-``` {r merging datasets, echo = F, message = F}
+``` {r merging datasets, echo = F, warning = F, message = F}
 total_data<- all_years %>% 
   left_join(flood_total) %>%
   left_join(drought_total) %>%
@@ -468,14 +468,14 @@ save("total_data", file = "processed_data/analysis_data.RData")
 ```
 
 
-```{r creating head of household subset, echo = F, message = F}
+```{r creating head of household subset, echo = F, warning = F, message = F}
 
 hh_head <- subset(total_data, relation == 1, select = c("hh_id", "female", "age", "literacy", "dept", "rural", "income", "year", "educ", "job", "tasks", "pov_diff", "extr_diff", "pov", "extr"))
 
 ```
 
 
-```{r creating children subset, echo = F, message = F}
+```{r creating children subset, echo = F, warning = F, message = F}
 
 children <- subset(total_data, age < 18 & age > 4, select = c("hh_id", "age", "female", "child", "grandchild", "literacy", "dept", "rural", "attend", "reason", "register", "primary", "secondary", "floods", "droughts", "lag_floods", "lag_droughts", "year", "money_reason", "work_reason"))
 
@@ -491,17 +491,9 @@ total_children <- merge(children_id,household_counts, by="hh_id")
 export_summary_table(dfSummary(total_children))
 
 
-total_children %>%
-      group_by(child, grandchild) %>%
-      summarise(n = n())
-
-total_children %>%
-   group_by(work_reason, money_reason) %>%
-   summarise(n = n())
-
 ```
 
-```{r combining household head characteristics with children dataset, echo = F, message = F}
+```{r combining household head characteristics with children, echo = F, warning = F, results = 'hide', message = F}
 hh_head_2 <- hh_head %>%
   select(female, age, literacy, educ, job, tasks, income, pov, extr, hh_id) %>%
   rename (female_hhhead = female,
@@ -521,6 +513,7 @@ total <- merge(total_children,total_heads_subset, by="hh_id")
 total %>%
   group_by(reason) %>%
   summarise(n = n())
+#figure out how to get rid of the table 
 
 total_2 <- subset(total, !(reason == "vacation" & attend == 0)) #taking out the observations with vacation kids
 
@@ -528,11 +521,10 @@ total_subset <- total_2 %>% distinct()
 
 
 
-
 ```
 
 
-```{r regression variable specifications, echo = F, message = F}
+```{r regression variable specifications, echo = F, warning = F, message = F}
 
 reg_data <- total_subset %>%
   mutate(year_factor = as.factor(year),
@@ -559,16 +551,8 @@ reg_data <- total_subset %>%
 #creating rural sample
 rural <- subset(reg_data, rural == 1, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "lny", "attend", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor", "work_reason", "secondary", "valleys", "mountains", "plains", "dept", "extr", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov", "flood_lny", "drought_lny", "lag_flood_lny", "lag_drought_lny", "lag_f_secondary", "lag_d_secondary", "lag_floods", "lag_droughts"))
 
-reg_data %>%
-  group_by(dept_factor) %>%
-  summarise(n = n())
-
-
-reg_data %>%
-   group_by(attend, register) %>%
-   summarise(n = n())
-
 ```
+
 ##Variable Descriptions
 
 \begin{table}
@@ -606,7 +590,7 @@ Plains          & Binary variable, 1 = department is in plains region          \
 \end{tabular}
 \end{table}
 
-```{r create summary statistic table, echo = F, results = 'asis'}
+```{r create summary statistic table, echo = F, message = F, warning = F, results = 'asis'}
 #creating a table with the main explanatory variables
 
 table_total <- reg_data %>%
@@ -711,9 +695,7 @@ These three regression equations are repeated in the analysis using different sa
 
 # Results
 
-
-
-```{r probit regression total sample, echo = F, message = F}
+```{r probit regression total sample, echo = F, warning = F, message = F}
 
 probitMod_assist <- glm(attend ~ floods + flood_lny + droughts + drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
 
@@ -723,7 +705,7 @@ probitMod_work <- glm(work_reason ~ floods + flood_lny + droughts + drought_lny 
 
 ```
 
-```{r generate probit regression table, echo = F, results = "asis"}
+```{r generate probit regression table, echo = F, message = F, results = "asis"}
 stargazer::stargazer(list(probitMod_assist, probitMod_register, probitMod_work), 
                title = "Full sample probit regression results", 
                label = "fullResults1",
@@ -732,7 +714,7 @@ stargazer::stargazer(list(probitMod_assist, probitMod_register, probitMod_work),
 
 ```
 
-```{r probit regression rural sample, echo = F, message = F}
+```{r probit regression rural sample, echo = F, warning = F, message = F}
 
 probitMod_assist_r <- glm(attend ~ floods + flood_lny + droughts + drought_lny + age + female + lny + child + grandchild + num_children + secondary + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
 
@@ -742,7 +724,7 @@ probitMod_work_r <- glm(work_reason ~ floods + flood_lny + droughts + drought_ln
 
 ```
 
-```{r generate probit regression table rural sample, echo = F, results = "asis"}
+```{r generate probit regression table rural sample, echo = F, message = F, results = "asis"}
 stargazer::stargazer(list(probitMod_assist_r, probitMod_register_r, probitMod_work_r), 
                title = "Rural sample probit regression results", 
                label = "fullResults3",
@@ -751,7 +733,7 @@ stargazer::stargazer(list(probitMod_assist_r, probitMod_register_r, probitMod_wo
 
 ```
 
-```{r probit regression urban sample, echo = F, message = F}
+```{r probit regression urban sample, echo = F, warning = F, message = F}
 
 urban <- subset(reg_data, rural == 0, select = c("hh_id", "id", "age", "female", "literacy", "dept_factor", "rural", "lny", "attend", "register", "floods", "droughts", "year", "child", "grandchild", "num_children", "female_hhhead", "hhhead_literacy", "hhhead_educ", "year_factor", "work_reason", "secondary", "valleys", "mountains", "plains", "dept", "extr", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov", "flood_lny", "drought_lny", "lag_flood_lny", "lag_drought_lny", "lag_f_secondary", "lag_d_secondary", "lag_floods", "lag_droughts"))
 
@@ -765,7 +747,8 @@ probitMod_work_u <- glm(work_reason ~ floods + flood_lny + droughts + drought_ln
 
 
 The following tables show the results with the lagged variables for floods and droughts.
-```{r probit regression total sample lagged variables, echo = F, message = F}
+
+```{r probit regression total sample lagged variables, echo = F, warning = F, message = F}
 
 probitMod_assist_lt <- glm(attend ~ lag_floods + lag_flood_lny + lag_droughts + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
 
@@ -775,7 +758,7 @@ probitMod_work_lt <- glm(work_reason ~ lag_floods + lag_flood_lny + lag_droughts
 
 ```
 
-```{r generate probit regression table lagged variables, echo = F, results = "asis"}
+```{r generate probit regression table lagged variables, echo = F, message = F, results = "asis"}
 stargazer::stargazer(list(probitMod_assist_lt, probitMod_register_lt, probitMod_work_lt), 
                title = "Full sample probit regression results (lagged)", 
                label = "fullResults5",
@@ -784,7 +767,7 @@ stargazer::stargazer(list(probitMod_assist_lt, probitMod_register_lt, probitMod_
 
 ```
 
-```{r probit regression rural sample lagged, echo = F, message = F}
+```{r probit regression rural sample lagged, echo = F, warning = F, message = F}
 
 probitMod_assist_lr <- glm(attend ~ lag_floods + lag_flood_lny + lag_droughts + lag_drought_lny + age + female + lny + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
 
@@ -794,7 +777,7 @@ probitMod_work_lr <- glm(work_reason ~ lag_floods + lag_flood_lny + lag_droughts
 
 ```
 
-```{r generate probit regression table rural sample lagged, echo = F, results = "asis"}
+```{r probit regression table rural sample lagged, message= F, echo = F, results = "asis"}
 stargazer::stargazer(list(probitMod_assist_lr, probitMod_register_lr, probitMod_work_lr), 
                title = "Rural sample probit regression results (lagged)", 
                label = "fullResults6",
@@ -803,11 +786,11 @@ stargazer::stargazer(list(probitMod_assist_lr, probitMod_register_lr, probitMod_
 
 ```
 
-##Robustness Checks 
+## Robustness Checks 
 
 The following results show a different income specification, the inclusion of the extreme poverty variable instead of the log of income.
 
-```{r probit regression total sample extr, echo = F, message = F}
+```{r probit regression total sample extr, echo = F, warning = F, message = F}
 
 probitMod_assistx <- glm(attend ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
 
@@ -817,7 +800,7 @@ probitMod_workx <- glm(work_reason ~ floods + flood_secondary + flood_pov + drou
 
 ```
 
-```{r generate probit regression table extr, echo = F, results = "asis"}
+```{r generate probit regression table extr, echo = F, message = F, results = "asis"}
 stargazer::stargazer(list(probitMod_assistx, probitMod_registerx, probitMod_workx), 
                title = "Full sample probit regression results (poverty measure)", 
                label = "fullResults8",
@@ -826,7 +809,6 @@ stargazer::stargazer(list(probitMod_assistx, probitMod_registerx, probitMod_work
 
 ```
 
-The following results show the linear regression models.
 
 ```{r linear regressions total sample, echo = F, message = F}
 
@@ -838,7 +820,7 @@ model_reason_t <- (lm(work_reason ~ floods + flood_secondary + flood_lny + droug
 
 ```
 
-```{r generate regression table, echo = F, results = "asis"}
+```{r generate regression table, echo = F, message = F, results = "asis"}
 stargazer::stargazer(list(model_assist_t, model_register_t, model_reason_t), 
                title = "Full sample linear regression results", 
                label = "fullResults11",
@@ -852,4 +834,17 @@ The flood results ended up being contrary to the hypothesis discussed in the con
 
 The drought results for the rural sample did correspond to the argument that weather events decrease income and increase the opportunity cost of school attendance as there was a significant negative relationship between droughts and school attendance. The result in Table 4 assumes that the effect of floods or droughts on schooling will be seen in the same year. This is a more convincing assumption for floods since they are a sudden-onset weather event that tend to have instantaneous effects, but as droughts are slow-onset their negative effects on people’s livelihoods might not be seen for months or even years, depending on how long they last. This issue is addressed by the inclusion of the lagged effects variables in Tables 6 and 7.
 These differing results could also be due to data limitations. One main limitation of this dataset is the fact that the flood and drought occurrences are measured at department level. Since there may be instances in which floods only affect one small area within a large department, the data cannot capture the fact that some people who are counted as being affected by this weather event by virtue of being in the same department might not be in the vicinity of the affected area at all. However, there is also the possibility that weather events in one part of the department can have consequences on other areas, through the mechanisms of higher food prices due to agricultural damage or limitations in human travel flows. 
+
+# References
+Baez, J.E., Lucchetti, I., Genoni, M. E., & Salazar, M. (2017). Gone with the storm: Rainfall shocks and household wellbeing in Guatemala. Journal of Development Studies, 53(8), 1253-1271. 
+
+Groppo, V., and K. Kraehnert. 2017. The Impact of Extreme Weather Events on Education. Journal of Population Economics 30 (2): 433–72
+
+Jensen, R. (2000). Agricultural volatility and investments in children. American Economic Review Paper and Proceedings, 90(2), 399-404.
+
+Marchetta, F., Sahn, D., Tiberti, L. (2019). The Role of Weather on Schooling and Work of Young Adults in Madagascar. American Journal of Agricultural Economics, 101(4), 1203-1227. 
+
+Shah, M., & Steinberg, B.M. (2017). Drought of opportunities: Contemporaneous and long-term impacts of rainfall shocks on human capital. Journal of Political Economy, 125(2), 527-561.
+
+Zimmermann, L. (2020). Remember When It Rained—Schooling Responses to Shocks in India. World Development, 126.
 
