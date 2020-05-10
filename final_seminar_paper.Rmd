@@ -40,6 +40,13 @@ export_summary_table <- function(dfSummary_output){
       report.title = ds_name)
 }
 ```
+
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+
 # Introduction
 
 Weather events have been linked to changes in household income, education and working behaviors, especially in developing countries and areas where people are particularly reliant on agriculture. In the 21st century, with the threat of climate change, exploration of these connections is even more crucial. In developmental economics literature, the mechanisms by which weather events affect households’ livelihoods tend to be agricultural, linking adverse precipitation or temperature shocks to decreases in income. This paper seeks to answer the question of whether high occurrences of floods and droughts in a region have an effect on children’s education, specifically in Bolivia.
@@ -790,6 +797,7 @@ stargazer::stargazer(list(probitMod_assist_lr, probitMod_register_lr, probitMod_
 
 The following results show a different income specification, the inclusion of the extreme poverty variable instead of the log of income.
 
+
 ```{r probit regression total sample extr, echo = F, warning = F, message = F}
 
 probitMod_assistx <- glm(attend ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = reg_data, family=binomial(link="probit"))  
@@ -809,6 +817,24 @@ stargazer::stargazer(list(probitMod_assistx, probitMod_registerx, probitMod_work
 
 ```
 
+```{r probit regression rural sample extr, echo = F, warning = F, message = F}
+
+probitMod_assist_rx <- glm(attend ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))  
+
+probitMod_register_rx <- glm(register ~ floods + flood_pov + droughts + drought_pov + age + female + extr + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+probitMod_work_rx <- glm(work_reason ~ floods + flood_secondary + flood_pov + droughts + drought_secondary + drought_pov + age + female + extr + secondary + child + grandchild + num_children + hhhead_educ + female_hhhead + dept_factor + year_factor, data = rural, family=binomial(link="probit"))
+
+```
+
+```{r generate probit regression table rural sample extr, echo = F, results = "asis"}
+stargazer::stargazer(list(probitMod_assist_rx, probitMod_register_rx, probitMod_work_rx), 
+               title = "Rural sample probit regression results (poverty measure)", 
+               label = "fullResults9",
+               header = F,
+               keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_pov", "drought_pov","age", "female", "extr", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
+
+```
 
 ```{r linear regressions total sample, echo = F, message = F}
 
@@ -827,6 +853,7 @@ stargazer::stargazer(list(model_assist_t, model_register_t, model_reason_t),
                header = F,
                keep = c("floods", "droughts", "flood_secondary", "drought_secondary", "flood_lny", "drought_lny","age", "female", "lny", "secondary", "child", "grandchild", "num_children", "hhhead_educ", "female_hhhead"))
 ```
+
 
 #Discussion
 
